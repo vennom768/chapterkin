@@ -224,7 +224,8 @@ export function StoryComposer({
           placeholder="We visited Nana. The dog hid under the table during a thunderstorm. Maya lost a tooth."
         />
         <p className="mt-1 text-xs text-muted">
-          Optional. We&apos;ll weave it in naturally if you add it.
+          Optional. We&apos;ll weave it in naturally. Pictures keep the child
+          their current age unless you ask to show them older or younger here.
         </p>
       </div>
 

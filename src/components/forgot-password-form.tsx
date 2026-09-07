@@ -16,7 +16,7 @@ export function ForgotPasswordForm() {
     return (
       <div className="space-y-4">
         <p className="text-sm text-muted">
-          If that email has a Chapterkin account, we sent a reset link. Check
+          If that email has a ChapterKin account, we sent a reset link. Check
           spam if it is not in your inbox in a minute or two.
         </p>
         <Link

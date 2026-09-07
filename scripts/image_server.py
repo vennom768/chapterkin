@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Local NVIDIA image server for Chapterkin illustrations."""
+"""Local NVIDIA image server for ChapterKin illustrations."""
 
 from __future__ import annotations
 

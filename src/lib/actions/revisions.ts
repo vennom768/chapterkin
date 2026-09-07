@@ -102,7 +102,7 @@ export async function startPageRevisionCheckout(input: {
             currency: "usd",
             unit_amount: amountCents,
             product_data: {
-              name: `Chapterkin page revision · ${pageIds.length} page${pageIds.length === 1 ? "" : "s"}`,
+              name: `ChapterKin page revision · ${pageIds.length} page${pageIds.length === 1 ? "" : "s"}`,
               description: `Rewrite and redraw selected pages of ${current.story.title}.`,
               tax_code: "txcd_10103000",
             },

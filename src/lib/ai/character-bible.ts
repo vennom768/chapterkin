@@ -1,4 +1,4 @@
-import { formatAge } from "@/lib/age";
+import { formatAge, formatAgeForArt } from "@/lib/age";
 import { bookArtBible } from "@/lib/illustration-styles";
 import type { childProfile } from "@/lib/db/schema";
 
@@ -27,7 +27,8 @@ export function buildCharacterBible(
   const nickname = storyName(child);
   const lines = [
     bookArtBible(styleId),
-    `Main child, keep this exact look on every page including the cover: ${nickname}, ${formatAge(child.age, child.ageMonths)}${nickname !== child.name ? ` (given name ${child.name})` : ""}.`,
+    `Main child, keep this exact look on every page including the cover: ${nickname}, ${formatAgeForArt(child.age, child.ageMonths)}${nickname !== child.name ? ` (given name ${child.name})` : ""}.`,
+    `AGE LOCK: ${nickname} is ${formatAgeForArt(child.age, child.ageMonths)}. Draw them that exact age on the cover and every interior page. Same height, same face, same body. Do not make them a baby, a toddler of a different age, a bigger kid, or a teen unless the parent tonight-note explicitly asks to change their age.`,
   ];
 
   const appearance = childAppearanceLine(child);
@@ -55,7 +56,7 @@ export function describeChildForStory(child: Child, characters: StoryPerson[]) {
   const nickname = storyName(child);
   const parts = [
     `The child's given name is ${child.name}. The family calls them "${nickname}". Use "${nickname}" in the story.`,
-    `Age: ${formatAge(child.age, child.ageMonths)}.`,
+    `Age: ${formatAge(child.age, child.ageMonths)}. Keep them this age in the story and in every picture unless the parent's tonight note explicitly asks for a different age.`,
   ];
   if (child.callsMom) {
     parts.push(`They call their mom "${child.callsMom}". Use that word, not "mother".`);
@@ -92,10 +93,19 @@ export function describeChildForStory(child: Child, characters: StoryPerson[]) {
   return parts.join("\n");
 }
 
-export function coverImagePrompt(title: string, childName: string) {
-  return `FRONT COVER of this one children's picture book. The painted title on the cover reads exactly: "${title}". ${childName} is the hero, centered and inviting. Square hardcover. No barcode, no price, no publisher logo, no extra captions besides the title.`;
+export function coverImagePrompt(
+  title: string,
+  childName: string,
+  ageForArt?: string,
+) {
+  const age = ageForArt ? ` ${childName} is ${ageForArt} — keep that exact age.` : "";
+  return `FRONT COVER of this one children's picture book. The painted title on the cover reads exactly: "${title}". ${childName} is the hero, centered and inviting.${age} Square hardcover. No barcode, no price, no publisher logo, no extra captions besides the title.`;
 }
 
-export function interiorImagePrompt(scene: string) {
-  return `INTERIOR PAGE of the SAME printed book as the cover. Same illustrator and character design. Scene: ${scene}. No text, no letters, no title, no watermark.`;
+export function interiorImagePrompt(scene: string, childName?: string, ageForArt?: string) {
+  const age =
+    childName && ageForArt
+      ? ` ${childName} is still ${ageForArt}. Same age as the cover, not older or younger.`
+      : "";
+  return `INTERIOR PAGE of the SAME printed book as the cover. Same illustrator and character design.${age} Scene: ${scene}. No text, no letters, no title, no watermark.`;
 }

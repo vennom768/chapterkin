@@ -35,10 +35,10 @@ export default async function AdminPage() {
           Site admin
         </p>
         <h1 className="font-serif text-3xl text-navy sm:text-4xl">
-          Configure Chapterkin
+          Configure ChapterKin
         </h1>
         <p className="mt-2 max-w-2xl text-muted">
-          This page is only for you, the Chapterkin owner. Parents never see it.
+          This page is only for you, the ChapterKin owner. Parents never see it.
           Use parent mode to write stories like a family account.
         </p>
       </div>
@@ -47,12 +47,12 @@ export default async function AdminPage() {
         <div>
           <h2 className="font-serif text-2xl text-navy">Use as a parent</h2>
           <p className="mt-1 text-sm text-muted">
-            Hide this admin area and walk through Chapterkin the way a family
+            Hide this admin area and walk through ChapterKin the way a family
             would. You can come back here any time.
           </p>
         </div>
         <form action={setAdminViewMode.bind(null, "parent")}>
-          <Button type="submit">Use Chapterkin as a parent</Button>
+          <Button type="submit">Use ChapterKin as a parent</Button>
         </form>
       </Card>
 

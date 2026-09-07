@@ -32,8 +32,9 @@ export async function generateRevisedPages(input: {
 
   const system = `You revise selected pages of an existing children's bedtime picture book.
 Keep the rest of the book consistent. Soft, kind, bedtime-safe language.
+Keep the child the same age in the text and in every imagePrompt unless the parent revision notes explicitly ask to change their age.
 If a selected page is the cover, keep the painted-title idea in imagePrompt and use the requested title change in text if the parent asked for one.
-imagePrompt describes one interior or cover scene with no extra captions except a cover title.
+imagePrompt describes one interior or cover scene with no extra captions except a cover title. Include the child's age.
 Return JSON only: { pages: [{ pageId, text, imagePrompt }] } for the selected pages only.`;
 
   const user = `Book title: ${input.title}

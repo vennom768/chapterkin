@@ -1,4 +1,4 @@
-# Chapterkin
+# ChapterKin
 
 Personalized bedtime stories for a family to read aloud. A parent creates one family account, adds the kids (and optional grandparents, pets, and other household people), then picks a child and generates tonight’s story. Stories can be standalone or the next chapter of a series. Each story is paginated with optional storybook illustrations. The family library keeps every night.
 
@@ -26,7 +26,7 @@ Edit `.env.local`:
 - `OPENAI_API_KEY` — required for the default provider
 - `STORY_PROVIDER` — `openai` (default), `local` (Ollama + local pictures), or `mock` (no models)
 - `RESEND_API_KEY` — required in production so parents can confirm email and reset passwords
-- `RESEND_FROM` — a domain verified in Resend, such as `Chapterkin <noreply@chapterkin.com>`
+- `RESEND_FROM` — a domain verified in Resend, such as `ChapterKin <noreply@chapterkin.com>`
 - `SMTP_HOST` / `SMTP_PORT` — local Mailpit defaults (`127.0.0.1:1025`). Emails appear at [http://127.0.0.1:8025](http://127.0.0.1:8025)
 - `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` — required for checkout
 - Database URL can stay as the Docker default

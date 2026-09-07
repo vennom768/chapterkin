@@ -20,7 +20,7 @@ export default async function SettingsPage() {
       <div>
         <h1 className="font-serif text-3xl text-navy sm:text-4xl">Settings</h1>
         <p className="mt-1 text-muted">
-          This is a family account. Children never sign in to Chapterkin.
+          This is a family account. Children never sign in to ChapterKin.
         </p>
       </div>
       <Card className="space-y-3">

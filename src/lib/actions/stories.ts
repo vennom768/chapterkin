@@ -7,7 +7,7 @@ import { z } from "zod";
 import { illustrateStory } from "@/lib/ai/images";
 import { checkPromptSafety } from "@/lib/ai/safety";
 import { generateStoryText } from "@/lib/ai/stories";
-import { getAgeBand } from "@/lib/age";
+import { formatAgeForArt, getAgeBand } from "@/lib/age";
 import { db } from "@/lib/db";
 import { story, storyPage, storySeries } from "@/lib/db/schema";
 import { assertCanGenerateStory } from "@/lib/billing";
@@ -152,7 +152,11 @@ export async function createStory(input: z.infer<typeof generateSchema>) {
       pageIndex: 0,
       kind: "cover",
       text: generated.title,
-      imagePrompt: coverImagePrompt(generated.title, childName),
+      imagePrompt: coverImagePrompt(
+        generated.title,
+        childName,
+        formatAgeForArt(profile.child.age, profile.child.ageMonths),
+      ),
       imageStatus: "pending",
     },
     ...generated.pages.map((page, index) => ({

@@ -18,7 +18,7 @@ export default async function AdminLayout({
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-navy text-gold">
               <Moon className="h-4 w-4" />
             </span>
-            <span className="truncate font-serif text-xl">Chapterkin admin</span>
+            <span className="truncate font-serif text-xl">ChapterKin admin</span>
           </Link>
           <div className="flex shrink-0 items-center gap-3">
             <span className="hidden max-w-48 truncate text-sm text-muted sm:inline">

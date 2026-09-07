@@ -7,6 +7,7 @@ import {
   interiorImagePrompt,
   storyName,
 } from "@/lib/ai/character-bible";
+import { formatAgeForArt } from "@/lib/age";
 import { generateLocalPng } from "@/lib/ai/local-images";
 import { mockPageSvg } from "@/lib/ai/mock-images";
 import { storyImageFallbackModel, storyImageModel } from "@/lib/ai/models";
@@ -22,13 +23,14 @@ function pagePrompt(
   bible: string,
   title: string,
   childName: string,
+  ageForArt: string,
   page: { kind: string; imagePrompt: string; pageIndex: number },
 ) {
   const scene =
     page.kind === "cover"
-      ? coverImagePrompt(title, childName)
-      : interiorImagePrompt(page.imagePrompt);
-  return `${bible} ${scene} This is page ${page.pageIndex + 1} of the same book.`;
+      ? coverImagePrompt(title, childName, ageForArt)
+      : interiorImagePrompt(page.imagePrompt, childName, ageForArt);
+  return `${bible} ${scene} ${childName} is ${ageForArt} on this page too. This is page ${page.pageIndex + 1} of the same book.`;
 }
 
 async function imageBufferFromResult(result: {
@@ -135,6 +137,7 @@ export async function illustrateStory(storyId: string, pageIds?: string[]) {
         bible,
         current.title,
         storyName(cast.child),
+        formatAgeForArt(cast.child.age, cast.child.ageMonths),
         page,
       );
       const png = isLocalStoryProvider()

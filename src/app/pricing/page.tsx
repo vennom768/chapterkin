@@ -11,7 +11,7 @@ export default async function PricingPage() {
     <div className="min-h-dvh bg-background">
       <header className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-4 pt-[max(1rem,env(safe-area-inset-top))]">
         <Link href="/" className="font-serif text-2xl text-navy">
-          Chapterkin
+          ChapterKin
         </Link>
         <Link
           href={user ? "/billing" : "/sign-in"}

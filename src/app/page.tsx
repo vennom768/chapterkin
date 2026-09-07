@@ -16,7 +16,7 @@ export default async function LandingPage() {
           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-navy text-gold">
             <MoonStar className="h-5 w-5" />
           </span>
-          <span className="truncate font-serif text-2xl">Chapterkin</span>
+          <span className="truncate font-serif text-2xl">ChapterKin</span>
         </div>
         <div className="flex shrink-0 gap-2">
           <Link

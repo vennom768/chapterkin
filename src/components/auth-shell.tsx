@@ -17,7 +17,7 @@ export function AuthShell({
           href="/"
           className="mb-6 block text-center font-serif text-3xl text-navy"
         >
-          Chapterkin
+          ChapterKin
         </Link>
         <Card>
           <h1 className="font-serif text-2xl text-navy">{title}</h1>

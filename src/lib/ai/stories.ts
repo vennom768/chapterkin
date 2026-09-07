@@ -5,7 +5,7 @@ import { ollamaJsonChat } from "@/lib/ai/ollama";
 import { storyTextModel } from "@/lib/ai/models";
 import { getOpenAI } from "@/lib/ai/openai";
 import { isLocalStoryProvider, isMockStoryProvider } from "@/lib/ai/provider";
-import { getAgeGuidance } from "@/lib/age";
+import { formatAge, getAgeGuidance } from "@/lib/age";
 import { getIllustrationStyle } from "@/lib/illustration-styles";
 import type { StoryPerson } from "@/lib/ai/character-bible";
 import type { childProfile, storySeries } from "@/lib/db/schema";
@@ -55,7 +55,8 @@ Hard rules:
 - Inclusive, warm, and respectful.
 - Each page is a speak-aloud chunk, not a wall of text.
 - Write 8 to 10 interior story pages. Do not write a cover page. The app adds a titled cover separately.
-- imagePrompt describes one interior scene from the SAME picture book: same child, same clothes, same face, same art style. No text in the image.
+- Draw the child at their listed age on every page. Do not age them up or down in the story or in imagePrompt unless the parent's tonight note explicitly asks for a different age.
+- imagePrompt describes one interior scene from the SAME picture book: same child, same age, same clothes, same face, same art style. Include the child's exact age in every imagePrompt. No text in the image.
 - Return JSON only that matches the requested schema.`;
 
 export async function generateStoryText(
@@ -97,6 +98,7 @@ Picture style for every page: ${style.name}. ${style.bible}
 
 Theme (optional): ${input.theme || "parent did not pick a theme — choose something cozy and fitting."}
 What happened today (optional): ${input.dailyPrompt || "none — invent a kind, original plot."}
+Keep the child ${formatAge(input.child.age, input.child.ageMonths)} in the writing and in every imagePrompt unless that tonight note clearly asks to show them at a different age.
 
 ${seriesBlock}
 

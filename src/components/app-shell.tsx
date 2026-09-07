@@ -30,7 +30,7 @@ export function AppShell({
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-navy text-gold">
               <Moon className="h-4 w-4" />
             </span>
-            <span className="truncate font-serif text-xl">Chapterkin</span>
+            <span className="truncate font-serif text-xl">ChapterKin</span>
           </Link>
           <nav className="hidden items-center gap-1 md:flex">
             {links.map((link) => (

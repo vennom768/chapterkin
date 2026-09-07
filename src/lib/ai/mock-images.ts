@@ -7,7 +7,7 @@ function escapeXml(value: string) {
 }
 
 export function mockPageSvg(label: string, pageNumber: number) {
-  const title = escapeXml(label.slice(0, 28) || "Chapterkin");
+  const title = escapeXml(label.slice(0, 28) || "ChapterKin");
   const hues = ["#c45c26", "#2a3a5c", "#7a4e2d", "#4a6b4f", "#6b3f5b", "#3d5a80"];
   const color = hues[pageNumber % hues.length];
   return `<?xml version="1.0" encoding="UTF-8"?>

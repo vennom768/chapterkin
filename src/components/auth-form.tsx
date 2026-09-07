@@ -50,7 +50,7 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
                   callbackURL: nextPath,
                 });
         } catch {
-          setError("Could not reach Chapterkin. Refresh the page and try again.");
+          setError("Could not reach ChapterKin. Refresh the page and try again.");
           setPending(false);
           return;
         }

@@ -17,6 +17,12 @@ export function formatAge(age: number, ageMonths?: number | null) {
   return age === 1 ? "1 year" : `${age} years`;
 }
 
+export function formatAgeForArt(age: number, ageMonths?: number | null) {
+  const label = formatAge(age, ageMonths);
+  if (label === "Newborn") return "a newborn";
+  return `${label} old`;
+}
+
 export function getAgeGuidance(age: number, ageMonths?: number | null) {
   const band = getAgeBand(age, ageMonths);
   if (band === "infant") {

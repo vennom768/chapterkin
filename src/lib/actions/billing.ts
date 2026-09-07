@@ -75,7 +75,7 @@ export async function startCheckout(planId: string): Promise<BillingActionResult
             unit_amount: plan.priceCents,
             recurring: { interval: "month" },
             product_data: {
-              name: `Chapterkin · ${plan.name}`,
+              name: `ChapterKin · ${plan.name}`,
               description: plan.blurb,
               tax_code: "txcd_10103000",
             },

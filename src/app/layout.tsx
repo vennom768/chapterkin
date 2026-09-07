@@ -13,7 +13,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Chapterkin",
+  title: "ChapterKin",
   description: "Personalized bedtime stories for your family, one night at a time.",
 };
 

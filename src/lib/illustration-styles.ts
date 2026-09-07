@@ -63,6 +63,6 @@ export function bookArtBible(styleId?: string | null) {
   return [
     `ONE printed children's picture book. Every page is by the same illustrator, in the same ${style.name.toLowerCase()} style, with the same character faces, hair, clothes, proportions, and color palette.`,
     style.bible,
-    "Square page. Warm lighting. Consistent characters from page to page. Do not change art style, medium, or character design.",
+    "Square page. Warm lighting. Consistent characters from page to page. Do not change art style, medium, character design, or the child's age.",
   ].join(" ");
 }

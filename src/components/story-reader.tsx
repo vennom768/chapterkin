@@ -95,7 +95,7 @@ export function StoryReader({
         ) : null}
         {isCover ? (
           <h1 className="font-serif text-2xl text-navy sm:text-3xl md:text-4xl">
-            A Chapterkin book
+            A ChapterKin book
           </h1>
         ) : (
           <h1 className="font-serif text-2xl text-navy sm:text-3xl md:text-4xl">{title}</h1>
