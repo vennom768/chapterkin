@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f0e4;
+  --foreground: #2c1810;
+  --card: #fffaf2;
+  --muted: #8a6d5b;
+  --border: #e6d4b8;
+  --accent: #c45c26;
+  --accent-dark: #9a4318;
+  --navy: #2a3a5c;
+  --gold: #e8b86d;
+  --reader: #1d1520;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-dark: var(--accent-dark);
+  --color-navy: var(--navy);
+  --color-gold: var(--gold);
+  --color-reader: var(--reader);
+  --font-sans: var(--font-nunito);
+  --font-serif: var(--font-fraunces);
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+  min-height: 100%;
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+
+body {
+  font-family: var(--font-nunito), ui-sans-serif, system-ui, sans-serif;
+  -webkit-tap-highlight-color: rgb(232 184 109 / 0.35);
+}
+
+h1,
+h2,
+h3,
+.font-serif {
+  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+}
+
+input,
+select,
+textarea {
+  font-size: 1rem;
+}
+
+::selection {
+  background: #f0c48a;
+  color: #2c1810;
+}

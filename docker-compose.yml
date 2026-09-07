@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: storynight
+      POSTGRES_PASSWORD: storynight
+      POSTGRES_DB: storynight
+    ports:
+      - "5432:5432"
+    volumes:
+      - storynight_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U storynight -d storynight"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  storynight_pg:
