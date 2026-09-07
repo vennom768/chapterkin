@@ -1,23 +1,16 @@
-import Link from "next/link";
+import { Suspense } from "react";
 import { AuthForm } from "@/components/auth-form";
-import { Card } from "@/components/ui/card";
+import { AuthShell } from "@/components/auth-shell";
 
 export default function SignUpPage() {
   return (
-    <div className="grid min-h-dvh place-items-center px-4 py-10">
-      <div className="w-full max-w-md">
-        <Link href="/" className="mb-6 block text-center font-serif text-3xl text-navy">
-          Chapterkin
-        </Link>
-        <Card>
-          <h1 className="font-serif text-2xl text-navy">Create a family account</h1>
-          <p className="mb-6 mt-1 text-sm text-muted">
-            Parents sign in. After that you&apos;ll add the kids, then pick who
-            tonight&apos;s story is for.
-          </p>
-          <AuthForm mode="sign-up" />
-        </Card>
-      </div>
-    </div>
+    <AuthShell
+      title="Create a family account"
+      description="Parents sign in. We will email you a confirmation link, then you add the kids and pick who tonight's story is for."
+    >
+      <Suspense>
+        <AuthForm mode="sign-up" />
+      </Suspense>
+    </AuthShell>
   );
 }

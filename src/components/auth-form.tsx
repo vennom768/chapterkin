@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,8 +10,10 @@ import { Label } from "@/components/ui/label";
 
 export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const nextPath = searchParams.get("next") || "/home";
 
   return (
     <form
@@ -21,29 +23,58 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
         setPending(true);
         setError(null);
         const form = new FormData(event.currentTarget);
-        const email = String(form.get("email") ?? "");
+        const email = String(form.get("email") ?? "").trim();
         const password = String(form.get("password") ?? "");
-        const name = String(form.get("name") ?? "");
+        const confirm = String(form.get("confirmPassword") ?? "");
+        const name = String(form.get("name") ?? "").trim();
 
-        const result =
-          mode === "sign-up"
-            ? await authClient.signUp.email({ email, password, name })
-            : await authClient.signIn.email({ email, password });
-
-        if (result.error) {
-          setError(result.error.message ?? "Something went wrong.");
+        if (mode === "sign-up" && password !== confirm) {
+          setError("Those passwords do not match.");
           setPending(false);
           return;
         }
 
-        router.push(mode === "sign-up" ? "/onboarding" : "/home");
+        const result =
+          mode === "sign-up"
+            ? await authClient.signUp.email({
+                email,
+                password,
+                name,
+                callbackURL: "/onboarding",
+              })
+            : await authClient.signIn.email({
+                email,
+                password,
+                callbackURL: nextPath,
+              });
+
+        if (result.error) {
+          const message = result.error.message ?? "Something went wrong.";
+          const unverified =
+            result.error.code === "EMAIL_NOT_VERIFIED" ||
+            /verif/i.test(message);
+          if (unverified) {
+            router.push(`/check-email?email=${encodeURIComponent(email)}`);
+            return;
+          }
+          setError(message);
+          setPending(false);
+          return;
+        }
+
+        if (mode === "sign-up") {
+          router.push(`/check-email?email=${encodeURIComponent(email)}`);
+          return;
+        }
+
+        router.push(nextPath.startsWith("/") ? nextPath : "/home");
         router.refresh();
       }}
     >
       {mode === "sign-up" ? (
         <div>
           <Label htmlFor="name">Your name</Label>
-          <Input id="name" name="name" required placeholder="Alex" />
+          <Input id="name" name="name" required placeholder="Alex" autoComplete="name" />
         </div>
       ) : null}
       <div>
@@ -54,10 +85,23 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
           type="email"
           required
           placeholder="you@example.com"
+          autoComplete="email"
         />
       </div>
       <div>
-        <Label htmlFor="password">Password</Label>
+        <div className="mb-1.5 flex items-center justify-between gap-3">
+          <Label htmlFor="password" className="mb-0">
+            Password
+          </Label>
+          {mode === "sign-in" ? (
+            <Link
+              href="/forgot-password"
+              className="text-sm font-semibold text-accent"
+            >
+              Forgot password?
+            </Link>
+          ) : null}
+        </div>
         <Input
           id="password"
           name="password"
@@ -65,8 +109,23 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
           required
           minLength={8}
           placeholder="At least 8 characters"
+          autoComplete={mode === "sign-up" ? "new-password" : "current-password"}
         />
       </div>
+      {mode === "sign-up" ? (
+        <div>
+          <Label htmlFor="confirmPassword">Confirm password</Label>
+          <Input
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            required
+            minLength={8}
+            placeholder="Type it again"
+            autoComplete="new-password"
+          />
+        </div>
+      ) : null}
       {error ? <p className="text-sm text-red-700">{error}</p> : null}
       <Button type="submit" className="w-full" disabled={pending}>
         {pending

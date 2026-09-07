@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { StoryComposer } from "@/components/story-composer";
 import { Card } from "@/components/ui/card";
+import { getUsage } from "@/lib/billing";
 import { listSeriesForChild } from "@/lib/queries/children";
 import { requireFamily } from "@/lib/session";
 
@@ -20,6 +21,14 @@ export default async function NewStoryPage({
 
   const childSeries = await listSeriesForChild(user.id, child.id);
   const siblings = children.filter((item) => item.id !== child.id);
+  const usage = await getUsage(user.id);
+  const quotaLabel = usage.limit == null
+    ? "Unlimited stories on your plan."
+    : usage.paid
+      ? `${usage.remaining} of ${usage.limit} stories left this month.`
+      : usage.canGenerate
+        ? "Your complimentary first story is ready."
+        : "Your complimentary story is used.";
 
   return (
     <div className="space-y-6">
@@ -53,6 +62,8 @@ export default async function NewStoryPage({
           defaultChildId={child.id}
           defaultSeriesId={seriesId}
           lockChild
+          canGenerate={usage.canGenerate}
+          quotaLabel={quotaLabel}
         />
       </Card>
     </div>

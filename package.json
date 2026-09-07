@@ -10,6 +10,8 @@
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node scripts/migrate.mjs",
     "db:studio": "drizzle-kit studio",
     "images:up": ".venv-sd/bin/python scripts/image_server.py"
   },
@@ -22,16 +24,19 @@
     "drizzle-orm": "^0.45.2",
     "lucide-react": "^1.38.0",
     "next": "16.3.4",
+    "nodemailer": "^10.0.1",
     "openai": "^6.49.0",
     "postgres": "^3.4.9",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "stripe": "^22.6.1",
     "tailwind-merge": "^3.6.0",
     "zod": "^4.5.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",

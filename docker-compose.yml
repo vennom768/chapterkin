@@ -15,5 +15,11 @@ services:
       timeout: 5s
       retries: 10
 
+  mail:
+    image: axllent/mailpit
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
 volumes:
   storynight_pg:

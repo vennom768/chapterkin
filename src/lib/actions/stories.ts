@@ -10,6 +10,7 @@ import { generateStoryText } from "@/lib/ai/stories";
 import { getAgeBand } from "@/lib/age";
 import { db } from "@/lib/db";
 import { story, storyPage, storySeries } from "@/lib/db/schema";
+import { assertCanGenerateStory } from "@/lib/billing";
 import { getChildWithStoryCast } from "@/lib/queries/children";
 import { requireUser } from "@/lib/session";
 import { createId } from "@/lib/utils";
@@ -30,6 +31,14 @@ function emptyToNull(value: unknown) {
 
 export async function createStory(input: z.infer<typeof generateSchema>) {
   const user = await requireUser();
+  try {
+    await assertCanGenerateStory(user.id);
+  } catch (error) {
+    return {
+      ok: false as const,
+      error: error instanceof Error ? error.message : "Choose a plan to generate a story.",
+    };
+  }
   const parsed = generateSchema.parse({
     ...input,
     seriesId: emptyToNull(input.seriesId),

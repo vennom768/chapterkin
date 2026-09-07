@@ -54,13 +54,19 @@ export default async function LandingPage() {
                 href="/sign-up"
                 className="inline-flex min-h-12 items-center justify-center rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white hover:bg-accent-dark"
               >
-                Start a story tonight
+                Start a complimentary story
               </Link>
               <Link
                 href="/sign-in"
                 className="inline-flex min-h-12 items-center justify-center rounded-full border border-border bg-white px-6 py-3 text-sm font-semibold text-navy"
               >
                 I already have an account
+              </Link>
+              <Link
+                href="/pricing"
+                className="inline-flex min-h-12 items-center justify-center text-sm font-semibold text-accent"
+              >
+                See plans
               </Link>
             </div>
           </div>

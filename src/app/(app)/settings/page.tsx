@@ -1,6 +1,10 @@
 import Link from "next/link";
-import { Card } from "@/components/ui/card";
+import {
+  ChangePasswordForm,
+  UpdateNameForm,
+} from "@/components/account-forms";
 import { SignOutButton } from "@/components/sign-out-button";
+import { Card } from "@/components/ui/card";
 import { getFamilyForUser } from "@/lib/queries/family";
 import { requireUser } from "@/lib/session";
 
@@ -33,17 +37,36 @@ export default async function SettingsPage() {
         ) : null}
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-            Name
-          </p>
-          <p className="text-lg">{user.name || "—"}</p>
-        </div>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
             Email
           </p>
           <p className="text-lg">{user.email}</p>
+          <p className="text-sm text-muted">
+            {user.emailVerified ? "Verified." : "Waiting for confirmation."}
+          </p>
+        </div>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+            Plan
+          </p>
+          <Link
+            href="/billing"
+            className="inline-flex min-h-11 items-center text-sm font-semibold text-accent"
+          >
+            Billing and story allowance
+          </Link>
         </div>
         <SignOutButton />
+      </Card>
+      <Card>
+        <h2 className="mb-4 font-serif text-2xl text-navy">Your name</h2>
+        <UpdateNameForm defaultName={user.name || ""} />
+      </Card>
+      <Card>
+        <h2 className="mb-4 font-serif text-2xl text-navy">Password</h2>
+        <p className="mb-4 text-sm text-muted">
+          Changing it signs out other devices.
+        </p>
+        <ChangePasswordForm />
       </Card>
     </div>
   );

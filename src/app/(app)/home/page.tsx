@@ -1,12 +1,16 @@
 import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
 import { Card } from "@/components/ui/card";
+import { getUsage } from "@/lib/billing";
 import { listStories } from "@/lib/queries/stories";
 import { requireFamily } from "@/lib/session";
 
 export default async function HomePage() {
   const { user, family, children } = await requireFamily();
-  const stories = await listStories(user.id);
+  const [stories, usage] = await Promise.all([
+    listStories(user.id),
+    getUsage(user.id),
+  ]);
   const recent = stories.slice(0, 4);
 
   return (
@@ -19,6 +23,18 @@ export default async function HomePage() {
         <p className="mt-2 max-w-2xl text-muted">
           Pick a child. We&apos;ll write a story just for them, using your
           family, siblings, and whatever happened today.
+        </p>
+        <p className="mt-3 text-sm font-semibold text-navy">
+          {usage.limit == null
+            ? "Unlimited stories this month."
+            : usage.paid
+              ? `${usage.remaining} of ${usage.limit} stories left this month.`
+              : usage.canGenerate
+                ? "One complimentary story included."
+                : "Complimentary story used."}{" "}
+          <Link href="/billing" className="text-accent">
+            Billing
+          </Link>
         </p>
       </div>
 

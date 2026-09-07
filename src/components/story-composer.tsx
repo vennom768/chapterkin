@@ -26,12 +26,16 @@ export function StoryComposer({
   defaultChildId,
   defaultSeriesId,
   lockChild = false,
+  canGenerate = true,
+  quotaLabel,
 }: {
   childrenOptions: ChildOption[];
   seriesOptions: SeriesOption[];
   defaultChildId?: string;
   defaultSeriesId?: string;
   lockChild?: boolean;
+  canGenerate?: boolean;
+  quotaLabel?: string;
 }) {
   const router = useRouter();
   const [childId, setChildId] = useState(
@@ -183,11 +187,20 @@ export function StoryComposer({
         </p>
       </div>
 
+      {quotaLabel ? <p className="text-sm text-muted">{quotaLabel}</p> : null}
       {error ? <p className="text-sm text-red-700">{error}</p> : null}
-
-      <Button type="submit" disabled={pending || !childId} className="w-full sm:w-auto">
-        {pending ? "Writing tonight's story..." : "Generate story"}
-      </Button>
+      {!canGenerate ? (
+        <a
+          href="/pricing"
+          className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent-dark sm:w-auto"
+        >
+          Choose a plan
+        </a>
+      ) : (
+        <Button type="submit" disabled={pending || !childId} className="w-full sm:w-auto">
+          {pending ? "Writing tonight's story..." : "Generate story"}
+        </Button>
+      )}
     </form>
   );
 }

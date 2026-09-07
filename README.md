@@ -7,8 +7,10 @@ The public site will live at [chapterkin.com](https://chapterkin.com). Print-and
 ## What you need
 
 - Node.js 20.9 or newer
-- Docker (for local Postgres)
+- Docker (for local Postgres and Mailpit)
 - An [OpenAI API key](https://platform.openai.com/api-keys) for stories, pictures, and moderation
+- A [Stripe](https://stripe.com) account for paid plans
+- A [Resend](https://resend.com) account for production email
 
 This app needs Node 20.9+.
 
@@ -23,6 +25,10 @@ Edit `.env.local`:
 - `BETTER_AUTH_SECRET` — a long random string
 - `OPENAI_API_KEY` — required for the default provider
 - `STORY_PROVIDER` — `openai` (default), `local` (Ollama + local pictures), or `mock` (no models)
+- `RESEND_API_KEY` — required in production so parents can confirm email and reset passwords
+- `RESEND_FROM` — a domain verified in Resend, such as `Chapterkin <noreply@chapterkin.com>`
+- `SMTP_HOST` / `SMTP_PORT` — local Mailpit defaults (`127.0.0.1:1025`). Emails appear at [http://127.0.0.1:8025](http://127.0.0.1:8025)
+- `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` — required for checkout
 - Database URL can stay as the Docker default
 
 Then:
@@ -56,11 +62,14 @@ With `STORY_PROVIDER=mock`, generate uses canned text and placeholder frames ins
 
 ## Everyday use
 
+Plans: one complimentary story, then **4 nights ($9)**, **8 nights ($16)**, or **unlimited ($29)** per month.
+
 1. Create a family account and add the kids (siblings are the other children; pets and grandparents are shared).
-2. On Tonight, pick the child the story is for.
-3. Choose tonight-only or a series, and optionally describe something from the day.
-4. Read the paginated story. Pictures fill in after the text if image generation succeeds.
-5. Reopen nights from the family library, or write the next chapter.
+2. Confirm the email (local messages open in Mailpit at port 8025).
+3. On Tonight, pick the child the story is for.
+4. Choose tonight-only or a series, and optionally describe something from the day.
+5. Read the paginated story. Pictures fill in after the text if image generation succeeds.
+6. Reopen nights from the family library, or write the next chapter.
 
 Stories remember a series through a short running summary, not the full text of earlier nights.
 

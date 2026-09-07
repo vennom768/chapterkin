@@ -9,6 +9,7 @@ const protectedPrefixes = [
   "/stories",
   "/library",
   "/settings",
+  "/billing",
 ];
 
 export function proxy(request: NextRequest) {
@@ -24,7 +25,12 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(signIn);
   }
 
-  if ((pathname === "/sign-in" || pathname === "/sign-up") && sessionCookie) {
+  if (
+    (pathname === "/sign-in" ||
+      pathname === "/sign-up" ||
+      pathname === "/forgot-password") &&
+    sessionCookie
+  ) {
     return NextResponse.redirect(new URL("/home", request.url));
   }
 
@@ -40,7 +46,9 @@ export const config = {
     "/stories/:path*",
     "/library/:path*",
     "/settings/:path*",
+    "/billing/:path*",
     "/sign-in",
     "/sign-up",
+    "/forgot-password",
   ],
 };
