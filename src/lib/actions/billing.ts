@@ -1,34 +1,58 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { getAppUrl } from "@/lib/app-url";
+import { isEmailVerificationRequired } from "@/lib/auth";
 import { getSubscriptionForUser } from "@/lib/billing";
 import { isPlanId } from "@/lib/plans";
-import { requireUser } from "@/lib/session";
+import { getCurrentUser } from "@/lib/session";
 import { getStripe, isStripeConfigured } from "@/lib/stripe";
 
-export async function startCheckout(planId: string) {
-  const user = await requireUser();
+export type BillingActionResult =
+  | { ok: true; url: string }
+  | { ok: false; error: string; redirectTo?: string };
+
+async function requireBillingUser(): Promise<
+  { ok: true; user: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>> } | BillingActionResult
+> {
+  const user = await getCurrentUser();
+  if (!user) {
+    return { ok: false, error: "Sign in to continue.", redirectTo: "/sign-in" };
+  }
+  if (isEmailVerificationRequired() && !user.emailVerified) {
+    return {
+      ok: false,
+      error: "Confirm your email first.",
+      redirectTo: `/check-email?email=${encodeURIComponent(user.email)}`,
+    };
+  }
+  return { ok: true, user };
+}
+
+export async function startCheckout(planId: string): Promise<BillingActionResult> {
+  const auth = await requireBillingUser();
+  if (!auth.ok) {
+    return auth;
+  }
   if (!isPlanId(planId)) {
-    throw new Error("Choose a plan.");
+    return { ok: false, error: "Choose a plan." };
   }
   if (!isStripeConfigured()) {
-    throw new Error("Payments are not configured yet.");
+    return { ok: false, error: "Payments are not configured yet." };
   }
   const stripe = getStripe();
   if (!stripe) {
-    throw new Error("Payments are not configured yet.");
+    return { ok: false, error: "Payments are not configured yet." };
   }
   const plan = (await import("@/lib/plans")).PLANS[planId];
-  const existing = await getSubscriptionForUser(user.id);
+  const existing = await getSubscriptionForUser(auth.user.id);
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer: existing?.stripeCustomerId ?? undefined,
-    customer_email: existing?.stripeCustomerId ? undefined : user.email,
-    client_reference_id: user.id,
-    metadata: { userId: user.id, planId },
+    customer_email: existing?.stripeCustomerId ? undefined : auth.user.email,
+    client_reference_id: auth.user.id,
+    metadata: { userId: auth.user.id, planId },
     subscription_data: {
-      metadata: { userId: user.id, planId },
+      metadata: { userId: auth.user.id, planId },
     },
     line_items: [
       {
@@ -48,21 +72,27 @@ export async function startCheckout(planId: string) {
     cancel_url: `${getAppUrl()}/pricing`,
   });
   if (!session.url) {
-    throw new Error("Stripe did not return a checkout URL.");
+    return { ok: false, error: "Stripe did not return a checkout URL." };
   }
-  redirect(session.url);
+  return { ok: true, url: session.url };
 }
 
-export async function openBillingPortal() {
-  const user = await requireUser();
+export async function openBillingPortal(): Promise<BillingActionResult> {
+  const auth = await requireBillingUser();
+  if (!auth.ok) {
+    return auth;
+  }
   const stripe = getStripe();
-  const existing = await getSubscriptionForUser(user.id);
+  const existing = await getSubscriptionForUser(auth.user.id);
   if (!stripe || !existing?.stripeCustomerId) {
-    redirect("/pricing");
+    return { ok: false, error: "No billing account yet.", redirectTo: "/pricing" };
   }
   const portal = await stripe.billingPortal.sessions.create({
     customer: existing.stripeCustomerId,
     return_url: `${getAppUrl()}/billing`,
   });
-  redirect(portal.url);
+  if (!portal.url) {
+    return { ok: false, error: "Could not open billing." };
+  }
+  return { ok: true, url: portal.url };
 }

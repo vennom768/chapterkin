@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { openBillingPortal } from "@/lib/actions/billing";
 import { Button } from "@/components/ui/button";
 
 export function BillingPortalButton() {
+  const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,16 +20,18 @@ export function BillingPortalButton() {
           setPending(true);
           setError(null);
           try {
-            await openBillingPortal();
-          } catch (err) {
-            if (
-              typeof err === "object" &&
-              err &&
-              "digest" in err &&
-              String((err as { digest?: string }).digest).startsWith("NEXT_REDIRECT")
-            ) {
-              throw err;
+            const result = await openBillingPortal();
+            if (!result.ok) {
+              if (result.redirectTo) {
+                router.push(result.redirectTo);
+                return;
+              }
+              setError(result.error);
+              setPending(false);
+              return;
             }
+            window.location.assign(result.url);
+          } catch (err) {
             setError(
               err instanceof Error ? err.message : "Could not open billing.",
             );

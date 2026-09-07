@@ -31,16 +31,18 @@ export function CheckoutButton({
           setPending(true);
           setError(null);
           try {
-            await startCheckout(planId);
-          } catch (err) {
-            if (
-              typeof err === "object" &&
-              err &&
-              "digest" in err &&
-              String((err as { digest?: string }).digest).startsWith("NEXT_REDIRECT")
-            ) {
-              throw err;
+            const result = await startCheckout(planId);
+            if (!result.ok) {
+              if (result.redirectTo) {
+                router.push(result.redirectTo);
+                return;
+              }
+              setError(result.error);
+              setPending(false);
+              return;
             }
+            window.location.assign(result.url);
+          } catch (err) {
             setError(
               err instanceof Error ? err.message : "Could not start checkout.",
             );
