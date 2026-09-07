@@ -1,3 +1,4 @@
+import { formatAge } from "@/lib/age";
 import { bookArtBible } from "@/lib/illustration-styles";
 import type { childProfile } from "@/lib/db/schema";
 
@@ -26,7 +27,7 @@ export function buildCharacterBible(
   const nickname = storyName(child);
   const lines = [
     bookArtBible(styleId),
-    `Main child, keep this exact look on every page including the cover: ${nickname}, ${child.age} years old${nickname !== child.name ? ` (given name ${child.name})` : ""}.`,
+    `Main child, keep this exact look on every page including the cover: ${nickname}, ${formatAge(child.age, child.ageMonths)}${nickname !== child.name ? ` (given name ${child.name})` : ""}.`,
   ];
 
   const appearance = childAppearanceLine(child);
@@ -54,7 +55,7 @@ export function describeChildForStory(child: Child, characters: StoryPerson[]) {
   const nickname = storyName(child);
   const parts = [
     `The child's given name is ${child.name}. The family calls them "${nickname}". Use "${nickname}" in the story.`,
-    `Age: ${child.age}.`,
+    `Age: ${formatAge(child.age, child.ageMonths)}.`,
   ];
   if (child.callsMom) {
     parts.push(`They call their mom "${child.callsMom}". Use that word, not "mother".`);

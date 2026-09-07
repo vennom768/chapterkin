@@ -9,6 +9,7 @@ import {
 } from "@/lib/ai/character-bible";
 import { generateLocalPng } from "@/lib/ai/local-images";
 import { mockPageSvg } from "@/lib/ai/mock-images";
+import { storyImageFallbackModel, storyImageModel } from "@/lib/ai/models";
 import { getOpenAI } from "@/lib/ai/openai";
 import { isLocalStoryProvider, isMockStoryProvider } from "@/lib/ai/provider";
 import { db } from "@/lib/db";
@@ -30,45 +31,54 @@ function pagePrompt(
   return `${bible} ${scene} This is page ${page.pageIndex + 1} of the same book.`;
 }
 
+async function imageBufferFromResult(result: {
+  data?: Array<{ b64_json?: string | null; url?: string | null }> | null;
+}) {
+  const b64 = result.data?.[0]?.b64_json;
+  if (b64) {
+    return Buffer.from(b64, "base64");
+  }
+  const url = result.data?.[0]?.url;
+  if (url) {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error("Failed to download generated image");
+    }
+    return Buffer.from(await response.arrayBuffer());
+  }
+  return null;
+}
+
 async function generateImagePng(prompt: string): Promise<Buffer> {
   const openai = getOpenAI();
+  const models = [storyImageModel(), storyImageFallbackModel()].filter(
+    (model, index, list) => list.indexOf(model) === index,
+  );
 
-  try {
-    const result = await openai.images.generate({
-      model: "gpt-image-1",
-      prompt,
-      size: "1024x1024",
-    });
-    const b64 = result.data?.[0]?.b64_json;
-    if (b64) {
-      return Buffer.from(b64, "base64");
-    }
-    const url = result.data?.[0]?.url;
-    if (url) {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error("Failed to download generated image");
+  let lastError: unknown;
+  for (const model of models) {
+    try {
+      const result = await openai.images.generate({
+        model,
+        prompt,
+        size: "1024x1024",
+        quality: "medium",
+      });
+      const buffer = await imageBufferFromResult(result);
+      if (buffer) {
+        return buffer;
       }
-      return Buffer.from(await response.arrayBuffer());
-    }
-  } catch {
-    const fallback = await openai.images.generate({
-      model: "dall-e-3",
-      prompt,
-      size: "1024x1024",
-      quality: "standard",
-      response_format: "b64_json",
-    });
-    const b64 = fallback.data?.[0]?.b64_json;
-    if (b64) {
-      return Buffer.from(b64, "base64");
+    } catch (error) {
+      lastError = error;
     }
   }
 
-  throw new Error("Image model did not return image data");
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("Image model did not return image data");
 }
 
-export async function illustrateStory(storyId: string) {
+export async function illustrateStory(storyId: string, pageIds?: string[]) {
   const [current] = await db.select().from(story).where(eq(story.id, storyId)).limit(1);
   if (!current) {
     return;
@@ -91,8 +101,12 @@ export async function illustrateStory(storyId: string) {
 
   await mkdir(STORAGE_DIR, { recursive: true });
 
+  const selected = new Set(pageIds ?? []);
   for (const page of pages.sort((a, b) => a.pageIndex - b.pageIndex)) {
-    if (page.imageStatus === "ready" && page.imagePath) {
+    if (selected.size && !selected.has(page.id)) {
+      continue;
+    }
+    if (!selected.size && page.imageStatus === "ready" && page.imagePath) {
       continue;
     }
     try {

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
-import { Card } from "@/components/ui/card";
+import { StoryTile } from "@/components/story-tile";
 import { listSeries, listStories } from "@/lib/queries/stories";
 import { requireFamily } from "@/lib/session";
 
@@ -106,29 +106,27 @@ export default async function LibraryPage({
         />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {stories.map(({ story, childName, seriesTitle }) => (
-            <Card key={story.id} className="flex flex-col justify-between">
-              <Link href={`/stories/${story.id}`}>
-                <p className="text-xs font-semibold uppercase tracking-wide text-accent">
-                  {childName}
-                  {seriesTitle
-                    ? ` · ${seriesTitle}${story.chapterNumber ? ` · Ch. ${story.chapterNumber}` : ""}`
-                    : " · Tonight only"}
-                </p>
-                <h2 className="mt-1 font-serif text-2xl text-navy">{story.title}</h2>
-                <p className="mt-2 line-clamp-3 text-sm text-muted">
-                  {story.synopsis}
-                </p>
-              </Link>
+          {stories.map(({ story, childName, seriesTitle, cover }) => (
+            <div key={story.id} className="space-y-2">
+              <StoryTile
+                storyId={story.id}
+                title={story.title}
+                synopsis={story.synopsis}
+                childName={childName}
+                seriesTitle={seriesTitle}
+                chapterNumber={story.chapterNumber}
+                coverPageId={cover?.id}
+                coverReady={cover?.imageStatus === "ready" && Boolean(cover.imagePath)}
+              />
               {story.seriesId ? (
                 <Link
                   href={`/stories/new?childId=${story.childId}&seriesId=${story.seriesId}`}
-                  className="mt-4 inline-flex min-h-11 items-center text-sm font-semibold text-accent"
+                  className="inline-flex min-h-11 items-center text-sm font-semibold text-accent"
                 >
                   Write the next chapter
                 </Link>
               ) : null}
-            </Card>
+            </div>
           ))}
         </div>
       )}

@@ -101,6 +101,12 @@ export function StoryReader({
           <h1 className="font-serif text-2xl text-navy sm:text-3xl md:text-4xl">{title}</h1>
         )}
         <p className="mt-1 text-sm text-muted">A story for {childName}</p>
+        <Link
+          href={`/stories/${storyId}/edit`}
+          className="mt-2 inline-flex text-sm font-semibold text-accent"
+        >
+          Revise pages
+        </Link>
       </div>
 
       <article
@@ -170,6 +176,12 @@ export function StoryReader({
           </Button>
         ) : (
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:justify-end">
+            <Link
+              href={`/stories/${storyId}/edit`}
+              className="inline-flex min-h-11 items-center justify-center rounded-full border border-border bg-white px-5 py-2.5 text-sm font-semibold text-navy hover:bg-gold/20"
+            >
+              Revise pages
+            </Link>
             {seriesId ? (
               <Link
                 href={`/stories/new?childId=${encodeURIComponent(childId)}&seriesId=${encodeURIComponent(seriesId)}`}

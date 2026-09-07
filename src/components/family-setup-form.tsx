@@ -12,6 +12,7 @@ type KidDraft = {
   name: string;
   calledBy: string;
   age: string;
+  ageMonths: string;
   favoriteThings: string;
   callsMom: string;
   callsDad: string;
@@ -27,6 +28,7 @@ const emptyKid = (): KidDraft => ({
   name: "",
   calledBy: "",
   age: "5",
+  ageMonths: "0",
   favoriteThings: "",
   callsMom: "",
   callsDad: "",
@@ -58,6 +60,7 @@ export function FamilySetupForm({ defaultFamilyName }: { defaultFamilyName: stri
             name: kid.name.trim(),
             calledBy: kid.calledBy.trim(),
             age: Number(kid.age),
+            ageMonths: Number(kid.age) < 1 ? Number(kid.ageMonths) || 0 : null,
             favoriteThings: kid.favoriteThings.trim(),
             callsMom: kid.callsMom.trim() || null,
             callsDad: kid.callsDad.trim() || null,
@@ -191,10 +194,10 @@ export function FamilySetupForm({ defaultFamilyName }: { defaultFamilyName: stri
               </div>
               <div className="flex items-end gap-2">
                 <div className="flex-1">
-                  <Label>Age</Label>
+                  <Label>Age in years</Label>
                   <Input
                     type="number"
-                    min={1}
+                    min={0}
                     max={12}
                     value={kid.age}
                     onChange={(event) =>
@@ -207,6 +210,7 @@ export function FamilySetupForm({ defaultFamilyName }: { defaultFamilyName: stri
                       )
                     }
                   />
+                  <p className="mt-1 text-xs text-muted">0 for a newborn.</p>
                 </div>
                 {kids.length > 1 ? (
                   <Button
@@ -223,6 +227,26 @@ export function FamilySetupForm({ defaultFamilyName }: { defaultFamilyName: stri
                   </Button>
                 ) : null}
               </div>
+              {Number(kid.age) < 1 ? (
+                <div>
+                  <Label>Age in months</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={11}
+                    value={kid.ageMonths}
+                    onChange={(event) =>
+                      setKids((current) =>
+                        current.map((item, itemIndex) =>
+                          itemIndex === index
+                            ? { ...item, ageMonths: event.target.value }
+                            : item,
+                        ),
+                      )
+                    }
+                  />
+                </div>
+              ) : null}
               <div>
                 <Label>They call Mom</Label>
                 <Input

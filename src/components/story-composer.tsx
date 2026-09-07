@@ -11,6 +11,7 @@ import {
   ILLUSTRATION_STYLES,
   type IllustrationStyleId,
 } from "@/lib/illustration-styles";
+import { formatAge } from "@/lib/age";
 import { cn } from "@/lib/utils";
 
 const THEMES = [
@@ -23,7 +24,7 @@ const THEMES = [
   { value: "bedtime", label: "Bedtime" },
 ];
 
-type ChildOption = { id: string; name: string; age: number };
+type ChildOption = { id: string; name: string; age: number; ageMonths?: number | null };
 type SeriesOption = { id: string; title: string; childId: string };
 
 export function StoryComposer({
@@ -105,7 +106,7 @@ export function StoryComposer({
           >
             {childrenOptions.map((child) => (
               <option key={child.id} value={child.id}>
-                {child.name}, {child.age}
+                {child.name}, {formatAge(child.age, child.ageMonths)}
               </option>
             ))}
           </select>

@@ -5,6 +5,7 @@ import { saveChild } from "@/lib/actions/children";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AgeFields } from "@/components/age-fields";
 import { LookBuilder } from "@/components/look-builder";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -16,6 +17,7 @@ export function ChildForm({
     name: string;
     calledBy: string;
     age: number;
+    ageMonths?: number | null;
     hair: string | null;
     eyes: string | null;
     skin: string | null;
@@ -28,6 +30,8 @@ export function ChildForm({
 }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [age, setAge] = useState(String(child?.age ?? 5));
+  const [ageMonths, setAgeMonths] = useState(String(child?.ageMonths ?? 0));
 
   return (
     <form
@@ -79,17 +83,15 @@ export function ChildForm({
             Stories will use this name.
           </p>
         </div>
-        <div>
-          <Label htmlFor="age">Age</Label>
-          <Input
-            id="age"
-            name="age"
-            type="number"
-            min={1}
-            max={12}
-            required
-            defaultValue={child?.age ?? 5}
+        <div className="sm:col-span-2">
+          <AgeFields
+            age={age}
+            ageMonths={ageMonths}
+            onAgeChange={setAge}
+            onMonthsChange={setAgeMonths}
           />
+          <input type="hidden" name="age" value={age} />
+          <input type="hidden" name="ageMonths" value={Number(age) < 1 ? ageMonths : ""} />
         </div>
       </section>
 
@@ -136,8 +138,8 @@ export function ChildForm({
       <section>
         <h2 className="font-serif text-xl text-navy">Build how they look</h2>
         <p className="mb-4 mt-1 text-sm text-muted">
-          Tap the pieces that fit. Optional, but it keeps every page of the
-          book looking like the same child.
+          Tap face, hair, eyes, and clothes like an avatar. You can change or
+          clear any piece. Extra notes are optional and fully editable.
         </p>
         <LookBuilder
           hair={child?.hair}

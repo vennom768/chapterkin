@@ -28,8 +28,9 @@ export default async function PricingPage() {
           Pay for the nights you actually write.
         </h1>
         <p className="mt-3 max-w-2xl text-muted">
-          Every family gets one complimentary story. After that, pick four
-          nights a month, eight, or unlimited. Cancel anytime.
+          A printed picture book often costs about $15 for one copy. Plans
+          start at $24.99 a month. Every family gets one complimentary story.
+          Cancel anytime.
         </p>
         <div className="mt-8">
           <PlanPicker currentPlanId={usage?.planId} signedIn={Boolean(user)} />

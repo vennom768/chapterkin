@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
+import { StoryTile } from "@/components/story-tile";
 import { Card } from "@/components/ui/card";
+import { formatAge } from "@/lib/age";
 import { getUsage } from "@/lib/billing";
 import { listStories } from "@/lib/queries/stories";
 import { requireFamily } from "@/lib/session";
@@ -43,7 +45,7 @@ export default async function HomePage() {
           <Link key={child.id} href={`/stories/new?childId=${child.id}`}>
             <Card className="h-full transition-transform hover:-translate-y-0.5">
               <p className="text-xs font-semibold uppercase tracking-wide text-accent">
-                Age {child.age}
+                {formatAge(child.age, child.ageMonths)}
                 {child.calledBy && child.calledBy !== child.name
                   ? ` · you call them ${child.calledBy}`
                   : ""}
@@ -68,21 +70,18 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            {recent.map(({ story, childName, seriesTitle }) => (
-              <Link key={story.id} href={`/stories/${story.id}`}>
-                <Card className="h-full transition-transform hover:-translate-y-0.5">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-accent">
-                    {childName}
-                    {seriesTitle ? ` · ${seriesTitle}` : ""}
-                  </p>
-                  <h3 className="mt-1 font-serif text-xl text-navy">
-                    {story.title}
-                  </h3>
-                  <p className="mt-2 line-clamp-2 text-sm text-muted">
-                    {story.synopsis}
-                  </p>
-                </Card>
-              </Link>
+            {recent.map(({ story, childName, seriesTitle, cover }) => (
+              <StoryTile
+                key={story.id}
+                storyId={story.id}
+                title={story.title}
+                synopsis={story.synopsis}
+                childName={childName}
+                seriesTitle={seriesTitle}
+                chapterNumber={story.chapterNumber}
+                coverPageId={cover?.id}
+                coverReady={cover?.imageStatus === "ready" && Boolean(cover.imagePath)}
+              />
             ))}
           </div>
         </section>

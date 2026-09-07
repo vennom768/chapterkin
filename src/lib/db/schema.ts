@@ -82,6 +82,7 @@ export const childProfile = pgTable("child_profile", {
   name: text("name").notNull(),
   calledBy: text("called_by").notNull(),
   age: integer("age").notNull(),
+  ageMonths: integer("age_months"),
   callsMom: text("calls_mom"),
   callsDad: text("calls_dad"),
   hair: text("hair"),
@@ -103,6 +104,10 @@ export const householdMember = pgTable("household_member", {
   relationship: text("relationship").notNull(),
   appearance: text("appearance"),
   speciesOrBreed: text("species_or_breed"),
+  hair: text("hair"),
+  eyes: text("eyes"),
+  skin: text("skin"),
+  usualClothes: text("usual_clothes"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -215,6 +220,23 @@ export const storyPageRelations = relations(storyPage, ({ one }) => ({
 export const siteSetting = pgTable("site_setting", {
   key: text("key").primaryKey(),
   value: text("value").notNull(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const pageRevision = pgTable("page_revision", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  storyId: text("story_id")
+    .notNull()
+    .references(() => story.id, { onDelete: "cascade" }),
+  pageIds: text("page_ids").notNull(),
+  instruction: text("instruction").notNull(),
+  amountCents: integer("amount_cents").notNull(),
+  stripeSessionId: text("stripe_session_id").unique(),
+  status: text("status").notNull().default("pending"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 

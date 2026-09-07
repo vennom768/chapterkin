@@ -1,13 +1,35 @@
-export type AgeBand = "toddler" | "early" | "older";
+export type AgeBand = "infant" | "toddler" | "early" | "older";
 
-export function getAgeBand(age: number): AgeBand {
+export function getAgeBand(age: number, ageMonths?: number | null): AgeBand {
+  if (age < 1) return "infant";
   if (age <= 4) return "toddler";
   if (age <= 7) return "early";
   return "older";
 }
 
-export function getAgeGuidance(age: number) {
-  const band = getAgeBand(age);
+export function formatAge(age: number, ageMonths?: number | null) {
+  if (age < 1) {
+    const months = ageMonths ?? 0;
+    if (months <= 0) return "Newborn";
+    if (months === 1) return "1 month";
+    return `${months} months`;
+  }
+  return age === 1 ? "1 year" : `${age} years`;
+}
+
+export function getAgeGuidance(age: number, ageMonths?: number | null) {
+  const band = getAgeBand(age, ageMonths);
+  if (band === "infant") {
+    const newborn = (ageMonths ?? 0) <= 3;
+    return {
+      band,
+      pages: { min: 8, max: 10 },
+      wordsPerPage: { min: 8, max: 20 },
+      tone: newborn
+        ? "A lullaby for a newborn. Soft sounds, faces, warmth, and sleep. Almost no plot. A parent should be able to murmur it."
+        : "A very gentle baby book. Simple sensory moments, repetition, and a calm landing into sleep. No adventure or danger.",
+    };
+  }
   if (band === "toddler") {
     return {
       band,

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { StoryComposer } from "@/components/story-composer";
 import { Card } from "@/components/ui/card";
+import { formatAge } from "@/lib/age";
 import { getUsage } from "@/lib/billing";
 import { listSeriesForChild } from "@/lib/queries/children";
 import { requireFamily } from "@/lib/session";
@@ -40,7 +41,7 @@ export default async function NewStoryPage({
           A story for {child.calledBy || child.name}
         </h1>
         <p className="mt-1 max-w-2xl text-muted">
-          Age {child.age}
+          {formatAge(child.age, child.ageMonths)}
           {siblings.length
             ? ` · siblings: ${siblings.map((item) => item.calledBy || item.name).join(", ")}`
             : ""}
@@ -53,6 +54,7 @@ export default async function NewStoryPage({
             id: item.id,
             name: item.name,
             age: item.age,
+            ageMonths: item.ageMonths,
           }))}
           seriesOptions={childSeries.map((series) => ({
             id: series.id,

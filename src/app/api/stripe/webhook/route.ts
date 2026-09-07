@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
+import { fulfillPageRevision } from "@/lib/actions/revisions";
 import { upsertSubscription } from "@/lib/billing";
 import { isPlanId } from "@/lib/plans";
 import { getStripe } from "@/lib/stripe";
@@ -52,7 +53,9 @@ export async function POST(request: Request) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const userId = session.client_reference_id ?? session.metadata?.userId;
-    if (userId && session.subscription) {
+    if (session.metadata?.kind === "page_revision" && session.metadata.revisionId) {
+      await fulfillPageRevision(session.metadata.revisionId);
+    } else if (userId && session.subscription) {
       const sub = await stripe.subscriptions.retrieve(String(session.subscription));
       await syncSubscription(sub, userId);
     }

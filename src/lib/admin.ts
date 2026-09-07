@@ -16,7 +16,7 @@ export function isAdminEmail(email?: string | null) {
 
 export async function getAdminViewMode(): Promise<"admin" | "parent"> {
   const jar = await cookies();
-  return jar.get(ADMIN_VIEW_COOKIE)?.value === "parent" ? "parent" : "admin";
+  return jar.get(ADMIN_VIEW_COOKIE)?.value === "admin" ? "admin" : "parent";
 }
 
 export async function getSiteSetting(key: string) {

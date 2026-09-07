@@ -69,7 +69,12 @@ export async function getChildWithStoryCast(userId: string, childId: string) {
     ...household.map((member) => ({
       name: member.name,
       relationship: member.relationship,
-      appearance: member.appearance,
+      appearance:
+        member.appearance ||
+        [member.hair, member.eyes, member.skin, member.usualClothes]
+          .filter(Boolean)
+          .join(", ") ||
+        null,
       speciesOrBreed: member.speciesOrBreed,
     })),
   ];

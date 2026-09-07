@@ -13,7 +13,8 @@ import { createId } from "@/lib/utils";
 const childDraftSchema = z.object({
   name: z.string().min(1, "Each child needs a name").max(80),
   calledBy: z.string().min(1, "Tell us what you call them").max(80),
-  age: z.coerce.number().int().min(1).max(12),
+  age: z.coerce.number().int().min(0).max(12),
+  ageMonths: z.coerce.number().int().min(0).max(11).optional().nullable(),
   favoriteThings: z
     .string()
     .min(2, "Tell us a little about each child")
@@ -25,8 +26,12 @@ const childDraftSchema = z.object({
 const householdDraftSchema = z.object({
   name: z.string().min(1).max(80),
   relationship: z.enum(["parent", "grandparent", "friend", "pet", "other"]),
-  appearance: z.string().max(240).optional().nullable(),
+  appearance: z.string().max(400).optional().nullable(),
   speciesOrBreed: z.string().max(80).optional().nullable(),
+  hair: z.string().max(160).optional().nullable(),
+  eyes: z.string().max(120).optional().nullable(),
+  skin: z.string().max(120).optional().nullable(),
+  usualClothes: z.string().max(240).optional().nullable(),
 });
 
 const onboardingSchema = z.object({
@@ -92,6 +97,7 @@ export async function saveFamilyOnboarding(formData: FormData) {
       name: child.name,
       calledBy: child.calledBy,
       age: child.age,
+      ageMonths: child.age < 1 ? (child.ageMonths ?? 0) : null,
       favoriteThings: child.favoriteThings,
       callsMom: child.callsMom ?? null,
       callsDad: child.callsDad ?? null,
@@ -109,6 +115,10 @@ export async function saveFamilyOnboarding(formData: FormData) {
         relationship: member.relationship,
         appearance: member.appearance ?? null,
         speciesOrBreed: member.speciesOrBreed ?? null,
+        hair: member.hair ?? null,
+        eyes: member.eyes ?? null,
+        skin: member.skin ?? null,
+        usualClothes: member.usualClothes ?? null,
       })),
     );
   }
@@ -166,6 +176,10 @@ export async function saveHousehold(formData: FormData) {
         relationship: member.relationship,
         appearance: member.appearance ?? null,
         speciesOrBreed: member.speciesOrBreed ?? null,
+        hair: member.hair ?? null,
+        eyes: member.eyes ?? null,
+        skin: member.skin ?? null,
+        usualClothes: member.usualClothes ?? null,
       })),
     );
   }

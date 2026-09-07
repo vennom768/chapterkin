@@ -2,6 +2,7 @@ import { z } from "zod";
 import { describeChildForStory } from "@/lib/ai/character-bible";
 import { generateMockStory } from "@/lib/ai/mock-stories";
 import { ollamaJsonChat } from "@/lib/ai/ollama";
+import { storyTextModel } from "@/lib/ai/models";
 import { getOpenAI } from "@/lib/ai/openai";
 import { isLocalStoryProvider, isMockStoryProvider } from "@/lib/ai/provider";
 import { getAgeGuidance } from "@/lib/age";
@@ -64,7 +65,7 @@ export async function generateStoryText(
     return generateMockStory(input);
   }
 
-  const guidance = getAgeGuidance(input.child.age);
+  const guidance = getAgeGuidance(input.child.age, input.child.ageMonths);
   const style = getIllustrationStyle(input.illustrationStyle);
 
   const seriesBlock =
@@ -112,7 +113,7 @@ JSON fields:
   } else {
     const openai = getOpenAI();
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: storyTextModel(),
       temperature: 0.8,
       response_format: { type: "json_object" },
       messages: [

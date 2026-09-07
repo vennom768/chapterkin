@@ -38,8 +38,8 @@ export default async function AdminPage() {
           Configure Chapterkin
         </h1>
         <p className="mt-2 max-w-2xl text-muted">
-          Change how the live site works, or switch into parent mode to use it
-          like a family account.
+          This page is only for you, the Chapterkin owner. Parents never see it.
+          Use parent mode to write stories like a family account.
         </p>
       </div>
 

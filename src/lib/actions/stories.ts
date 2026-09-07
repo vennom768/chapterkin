@@ -136,7 +136,7 @@ export async function createStory(input: z.infer<typeof generateSchema>) {
     title: generated.title,
     theme: parsed.theme,
     dailyPrompt: parsed.dailyPrompt,
-    ageBand: getAgeBand(profile.child.age),
+    ageBand: getAgeBand(profile.child.age, profile.child.ageMonths),
     chapterNumber,
     synopsis: generated.synopsis,
     illustrationStyle,

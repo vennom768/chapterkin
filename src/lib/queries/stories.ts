@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { childProfile, story, storyPage, storySeries } from "@/lib/db/schema";
 
@@ -18,7 +18,7 @@ export async function listStories(userId: string, filters?: {
     conditions.push(eq(story.mode, "standalone"));
   }
 
-  return db
+  const rows = await db
     .select({
       story,
       childName: childProfile.calledBy,
@@ -29,6 +29,34 @@ export async function listStories(userId: string, filters?: {
     .leftJoin(storySeries, eq(story.seriesId, storySeries.id))
     .where(and(...conditions))
     .orderBy(desc(story.createdAt));
+
+  if (rows.length === 0) {
+    return [];
+  }
+
+  const covers = await db
+    .select({
+      storyId: storyPage.storyId,
+      id: storyPage.id,
+      imageStatus: storyPage.imageStatus,
+      imagePath: storyPage.imagePath,
+    })
+    .from(storyPage)
+    .where(
+      and(
+        inArray(
+          storyPage.storyId,
+          rows.map((row) => row.story.id),
+        ),
+        eq(storyPage.kind, "cover"),
+      ),
+    );
+
+  const coverByStory = new Map(covers.map((cover) => [cover.storyId, cover]));
+  return rows.map((row) => ({
+    ...row,
+    cover: coverByStory.get(row.story.id) ?? null,
+  }));
 }
 
 export async function getStoryForUser(userId: string, storyId: string) {

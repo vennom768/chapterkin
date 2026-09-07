@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { formatAge } from "@/lib/age";
 import { saveFamilyDetails } from "@/lib/actions/family";
 import { requireFamily } from "@/lib/session";
 
@@ -70,7 +71,7 @@ export default async function FamilyPage() {
                   {child.calledBy && child.calledBy !== child.name
                     ? `${child.name} · `
                     : ""}
-                  Age {child.age}
+                  {formatAge(child.age, child.ageMonths)}
                 </p>
               </div>
               <div className="mt-4 flex flex-wrap gap-3">
@@ -107,6 +108,10 @@ export default async function FamilyPage() {
               | "other",
             appearance: member.appearance ?? "",
             speciesOrBreed: member.speciesOrBreed ?? "",
+            hair: member.hair ?? "",
+            eyes: member.eyes ?? "",
+            skin: member.skin ?? "",
+            usualClothes: member.usualClothes ?? "",
           }))}
         />
       </Card>
