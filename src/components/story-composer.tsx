@@ -6,6 +6,12 @@ import { createStory } from "@/lib/actions/stories";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  DEFAULT_ILLUSTRATION_STYLE,
+  ILLUSTRATION_STYLES,
+  type IllustrationStyleId,
+} from "@/lib/illustration-styles";
+import { cn } from "@/lib/utils";
 
 const THEMES = [
   { value: "", label: "Let the story decide" },
@@ -46,6 +52,9 @@ export function StoryComposer({
   );
   const [seriesId, setSeriesId] = useState(defaultSeriesId ?? "");
   const [theme, setTheme] = useState("");
+  const [illustrationStyle, setIllustrationStyle] = useState<IllustrationStyleId>(
+    DEFAULT_ILLUSTRATION_STYLE,
+  );
   const [dailyPrompt, setDailyPrompt] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -68,6 +77,7 @@ export function StoryComposer({
           seriesId: mode === "series" ? seriesId || null : null,
           theme,
           dailyPrompt,
+          illustrationStyle,
         });
         if (!result.ok) {
           setError(result.error);
@@ -172,6 +182,36 @@ export function StoryComposer({
           ))}
         </select>
       </div>
+
+      <fieldset className="space-y-3">
+        <legend className="mb-1.5 text-sm font-semibold text-navy">
+          How should the pictures look?
+        </legend>
+        <p className="text-sm text-muted">
+          Every page, including the cover, will be painted in this same style.
+        </p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {Object.values(ILLUSTRATION_STYLES).map((style) => {
+            const selected = illustrationStyle === style.id;
+            return (
+              <button
+                key={style.id}
+                type="button"
+                onClick={() => setIllustrationStyle(style.id)}
+                className={cn(
+                  "min-h-16 rounded-2xl border px-4 py-3 text-left transition-colors",
+                  selected
+                    ? "border-accent bg-gold/30"
+                    : "border-border bg-white hover:bg-gold/15",
+                )}
+              >
+                <span className="block font-semibold text-navy">{style.name}</span>
+                <span className="mt-0.5 block text-sm text-muted">{style.blurb}</span>
+              </button>
+            );
+          })}
+        </div>
+      </fieldset>
 
       <div>
         <Label htmlFor="dailyPrompt">Something from today</Label>

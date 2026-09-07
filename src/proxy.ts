@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 
 const protectedPrefixes = [
+  "/admin",
   "/home",
   "/onboarding",
   "/family",
@@ -39,6 +40,8 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
+    "/admin",
+    "/admin/:path*",
     "/home/:path*",
     "/onboarding/:path*",
     "/family/:path*",

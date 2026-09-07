@@ -141,6 +141,7 @@ export const story = pgTable("story", {
   ageBand: text("age_band").notNull(),
   chapterNumber: integer("chapter_number"),
   synopsis: text("synopsis"),
+  illustrationStyle: text("illustration_style").notNull().default("watercolor"),
   status: text("status").notNull().default("generating"),
   errorMessage: text("error_message"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -154,6 +155,7 @@ export const storyPage = pgTable(
       .notNull()
       .references(() => story.id, { onDelete: "cascade" }),
     pageIndex: integer("page_index").notNull(),
+    kind: text("kind").notNull().default("page"),
     text: text("text").notNull(),
     imagePrompt: text("image_prompt").notNull(),
     imagePath: text("image_path"),
@@ -209,6 +211,12 @@ export const storyPageRelations = relations(storyPage, ({ one }) => ({
     references: [story.id],
   }),
 }));
+
+export const siteSetting = pgTable("site_setting", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
 
 export const subscription = pgTable("subscription", {
   id: text("id").primaryKey(),

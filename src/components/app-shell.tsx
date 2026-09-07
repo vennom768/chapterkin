@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BookOpen, Home, Moon, Settings, Users } from "lucide-react";
+import { ParentModeBanner } from "@/components/parent-mode-banner";
 import { SignOutButton } from "@/components/sign-out-button";
 
 const links = [
@@ -13,13 +14,16 @@ export function AppShell({
   children,
   parentName,
   familyName,
+  showParentModeBanner = false,
 }: {
   children: React.ReactNode;
   parentName: string;
   familyName?: string | null;
+  showParentModeBanner?: boolean;
 }) {
   return (
     <div className="min-h-dvh bg-background">
+      {showParentModeBanner ? <ParentModeBanner /> : null}
       <header className="sticky top-0 z-20 border-b border-border/80 bg-background/90 pt-[env(safe-area-inset-top)] backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
           <Link href="/home" className="flex min-w-0 items-center gap-2 text-navy">

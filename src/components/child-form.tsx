@@ -5,6 +5,7 @@ import { saveChild } from "@/lib/actions/children";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LookBuilder } from "@/components/look-builder";
 import { Textarea } from "@/components/ui/textarea";
 
 export function ChildForm({
@@ -133,49 +134,17 @@ export function ChildForm({
       </section>
 
       <section>
-        <h2 className="font-serif text-xl text-navy">How they look</h2>
+        <h2 className="font-serif text-xl text-navy">Build how they look</h2>
         <p className="mb-4 mt-1 text-sm text-muted">
-          Optional. Used so story pictures can stay consistent from night to
-          night.
+          Tap the pieces that fit. Optional, but it keeps every page of the
+          book looking like the same child.
         </p>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <Label htmlFor="hair">Hair</Label>
-            <Input
-              id="hair"
-              name="hair"
-              defaultValue={child?.hair ?? ""}
-              placeholder="curly dark brown hair"
-            />
-          </div>
-          <div>
-            <Label htmlFor="eyes">Eyes</Label>
-            <Input
-              id="eyes"
-              name="eyes"
-              defaultValue={child?.eyes ?? ""}
-              placeholder="brown eyes"
-            />
-          </div>
-          <div>
-            <Label htmlFor="skin">Skin</Label>
-            <Input
-              id="skin"
-              name="skin"
-              defaultValue={child?.skin ?? ""}
-              placeholder="warm brown skin"
-            />
-          </div>
-          <div>
-            <Label htmlFor="usualClothes">Usual clothes</Label>
-            <Input
-              id="usualClothes"
-              name="usualClothes"
-              defaultValue={child?.usualClothes ?? ""}
-              placeholder="yellow raincoat and red boots"
-            />
-          </div>
-        </div>
+        <LookBuilder
+          hair={child?.hair}
+          eyes={child?.eyes}
+          skin={child?.skin}
+          usualClothes={child?.usualClothes}
+        />
       </section>
 
       <section>

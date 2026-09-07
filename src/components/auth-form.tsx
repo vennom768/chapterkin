@@ -34,19 +34,26 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
           return;
         }
 
-        const result =
-          mode === "sign-up"
-            ? await authClient.signUp.email({
-                email,
-                password,
-                name,
-                callbackURL: "/onboarding",
-              })
-            : await authClient.signIn.email({
-                email,
-                password,
-                callbackURL: nextPath,
-              });
+        let result;
+        try {
+          result =
+            mode === "sign-up"
+              ? await authClient.signUp.email({
+                  email,
+                  password,
+                  name,
+                  callbackURL: "/onboarding",
+                })
+              : await authClient.signIn.email({
+                  email,
+                  password,
+                  callbackURL: nextPath,
+                });
+        } catch {
+          setError("Could not reach Chapterkin. Refresh the page and try again.");
+          setPending(false);
+          return;
+        }
 
         if (result.error) {
           const message = result.error.message ?? "Something went wrong.";
@@ -59,11 +66,6 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
           }
           setError(message);
           setPending(false);
-          return;
-        }
-
-        if (mode === "sign-up") {
-          router.push(`/check-email?email=${encodeURIComponent(email)}`);
           return;
         }
 

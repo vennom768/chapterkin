@@ -1,7 +1,12 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { eq } from "drizzle-orm";
-import { storyName } from "@/lib/ai/character-bible";
+import {
+  buildCharacterBible,
+  coverImagePrompt,
+  interiorImagePrompt,
+  storyName,
+} from "@/lib/ai/character-bible";
 import { generateLocalPng } from "@/lib/ai/local-images";
 import { mockPageSvg } from "@/lib/ai/mock-images";
 import { getOpenAI } from "@/lib/ai/openai";
@@ -12,12 +17,17 @@ import { getChildWithStoryCast } from "@/lib/queries/children";
 
 const STORAGE_DIR = path.join(process.cwd(), "storage", "images");
 
-function imagePrompt(
+function pagePrompt(
+  bible: string,
+  title: string,
   childName: string,
-  appearance: string,
-  scene: string,
+  page: { kind: string; imagePrompt: string; pageIndex: number },
 ) {
-  return [childName, appearance, scene].filter(Boolean).join(", ");
+  const scene =
+    page.kind === "cover"
+      ? coverImagePrompt(title, childName)
+      : interiorImagePrompt(page.imagePrompt);
+  return `${bible} ${scene} This is page ${page.pageIndex + 1} of the same book.`;
 }
 
 async function generateImagePng(prompt: string): Promise<Buffer> {
@@ -69,14 +79,11 @@ export async function illustrateStory(storyId: string) {
     return;
   }
 
-  const appearance = [
-    cast.child.hair,
-    cast.child.eyes,
-    cast.child.skin,
-    cast.child.usualClothes,
-  ]
-    .filter(Boolean)
-    .join(", ");
+  const bible = buildCharacterBible(
+    cast.child,
+    cast.characters,
+    current.illustrationStyle,
+  );
   const pages = await db
     .select()
     .from(storyPage)
@@ -94,7 +101,10 @@ export async function illustrateStory(storyId: string) {
         const absolute = path.join(STORAGE_DIR, filename);
         await writeFile(
           absolute,
-          mockPageSvg(storyName(cast.child), page.pageIndex),
+          mockPageSvg(
+            page.kind === "cover" ? current.title : storyName(cast.child),
+            page.pageIndex,
+          ),
           "utf8",
         );
         await db
@@ -107,10 +117,11 @@ export async function illustrateStory(storyId: string) {
         continue;
       }
 
-      const prompt = imagePrompt(
+      const prompt = pagePrompt(
+        bible,
+        current.title,
         storyName(cast.child),
-        appearance,
-        page.imagePrompt,
+        page,
       );
       const png = isLocalStoryProvider()
         ? await generateLocalPng(prompt)

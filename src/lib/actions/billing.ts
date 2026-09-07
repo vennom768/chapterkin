@@ -1,7 +1,7 @@
 "use server";
 
 import { getAppUrl } from "@/lib/app-url";
-import { isEmailVerificationRequired } from "@/lib/auth";
+import { isAdminEmail, isEmailVerificationRequired } from "@/lib/admin";
 import { getSubscriptionForUser } from "@/lib/billing";
 import { isPlanId } from "@/lib/plans";
 import { getCurrentUser } from "@/lib/session";
@@ -20,7 +20,11 @@ async function requireBillingUser(): Promise<BillingUserResult> {
   if (!user) {
     return { ok: false, error: "Sign in to continue.", redirectTo: "/sign-in" };
   }
-  if (isEmailVerificationRequired() && !user.emailVerified) {
+  if (
+    (await isEmailVerificationRequired()) &&
+    !user.emailVerified &&
+    !isAdminEmail(user.email)
+  ) {
     return {
       ok: false,
       error: "Confirm your email first.",

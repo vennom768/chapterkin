@@ -13,6 +13,11 @@ import { story, storyPage, storySeries } from "@/lib/db/schema";
 import { assertCanGenerateStory } from "@/lib/billing";
 import { getChildWithStoryCast } from "@/lib/queries/children";
 import { requireUser } from "@/lib/session";
+import { coverImagePrompt, storyName } from "@/lib/ai/character-bible";
+import {
+  DEFAULT_ILLUSTRATION_STYLE,
+  isIllustrationStyleId,
+} from "@/lib/illustration-styles";
 import { createId } from "@/lib/utils";
 
 const generateSchema = z.object({
@@ -21,6 +26,7 @@ const generateSchema = z.object({
   seriesId: z.string().optional().nullable(),
   theme: z.string().max(40).optional().nullable(),
   dailyPrompt: z.string().max(500).optional().nullable(),
+  illustrationStyle: z.string().max(40).optional().nullable(),
 });
 
 function emptyToNull(value: unknown) {
@@ -44,7 +50,13 @@ export async function createStory(input: z.infer<typeof generateSchema>) {
     seriesId: emptyToNull(input.seriesId),
     theme: emptyToNull(input.theme),
     dailyPrompt: emptyToNull(input.dailyPrompt),
+    illustrationStyle: emptyToNull(input.illustrationStyle),
   });
+
+  const requestedStyle = parsed.illustrationStyle ?? DEFAULT_ILLUSTRATION_STYLE;
+  const illustrationStyle = isIllustrationStyleId(requestedStyle)
+    ? requestedStyle
+    : DEFAULT_ILLUSTRATION_STYLE;
 
   const safety = await checkPromptSafety(parsed.dailyPrompt, parsed.theme);
   if (!safety.ok) {
@@ -86,6 +98,7 @@ export async function createStory(input: z.infer<typeof generateSchema>) {
       theme: parsed.theme,
       dailyPrompt: parsed.dailyPrompt,
       series,
+      illustrationStyle,
     });
   } catch (error) {
     const message =
@@ -126,20 +139,32 @@ export async function createStory(input: z.infer<typeof generateSchema>) {
     ageBand: getAgeBand(profile.child.age),
     chapterNumber,
     synopsis: generated.synopsis,
+    illustrationStyle,
     status: "ready",
     createdAt: now,
   });
 
-  await db.insert(storyPage).values(
-    generated.pages.map((page, index) => ({
+  const childName = storyName(profile.child);
+  await db.insert(storyPage).values([
+    {
       id: createId(),
       storyId,
-      pageIndex: index,
+      pageIndex: 0,
+      kind: "cover",
+      text: generated.title,
+      imagePrompt: coverImagePrompt(generated.title, childName),
+      imageStatus: "pending",
+    },
+    ...generated.pages.map((page, index) => ({
+      id: createId(),
+      storyId,
+      pageIndex: index + 1,
+      kind: "page",
       text: page.text,
       imagePrompt: page.imagePrompt,
       imageStatus: "pending",
     })),
-  );
+  ]);
 
   if (series) {
     await db

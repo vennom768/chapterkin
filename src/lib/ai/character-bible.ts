@@ -1,3 +1,4 @@
+import { bookArtBible } from "@/lib/illustration-styles";
 import type { childProfile } from "@/lib/db/schema";
 
 type Child = typeof childProfile.$inferSelect;
@@ -13,24 +14,24 @@ export function storyName(child: Pick<Child, "name" | "calledBy">) {
   return child.calledBy.trim() || child.name;
 }
 
-export function buildCharacterBible(child: Child, characters: StoryPerson[]) {
+export function childAppearanceLine(child: Pick<Child, "hair" | "eyes" | "skin" | "usualClothes">) {
+  return [child.hair, child.eyes, child.skin, child.usualClothes].filter(Boolean).join(", ");
+}
+
+export function buildCharacterBible(
+  child: Child,
+  characters: StoryPerson[],
+  styleId?: string | null,
+) {
   const nickname = storyName(child);
   const lines = [
-    "Children's storybook illustration, watercolor gouache, warm lighting, square picture-book page, consistent characters, painted not photorealistic, no text, no letters, no watermark.",
-    `Main child: ${nickname}, ${child.age} years old${nickname !== child.name ? ` (given name ${child.name})` : ""}.`,
+    bookArtBible(styleId),
+    `Main child, keep this exact look on every page including the cover: ${nickname}, ${child.age} years old${nickname !== child.name ? ` (given name ${child.name})` : ""}.`,
   ];
 
-  const appearance = [
-    child.hair && `hair: ${child.hair}`,
-    child.eyes && `eyes: ${child.eyes}`,
-    child.skin && `skin: ${child.skin}`,
-    child.usualClothes && `usually wears: ${child.usualClothes}`,
-  ]
-    .filter(Boolean)
-    .join("; ");
-
+  const appearance = childAppearanceLine(child);
   if (appearance) {
-    lines.push(`Appearance: ${appearance}.`);
+    lines.push(`Appearance, do not change: ${appearance}.`);
   }
 
   for (const character of characters) {
@@ -42,7 +43,7 @@ export function buildCharacterBible(child: Child, characters: StoryPerson[]) {
       .filter(Boolean)
       .join(", ");
     lines.push(
-      `${character.relationship === "pet" ? "Pet" : "Person"}: ${character.name}${extras ? ` (${extras})` : ""}.`,
+      `${character.relationship === "pet" ? "Pet" : "Person"}: ${character.name}${extras ? ` (${extras})` : ""}. Keep this look if they appear.`,
     );
   }
 
@@ -67,16 +68,10 @@ export function describeChildForStory(child: Child, characters: StoryPerson[]) {
   if (child.notes) {
     parts.push(`Parent notes: ${child.notes}.`);
   }
-  if (child.hair || child.eyes || child.skin || child.usualClothes) {
+  const appearance = childAppearanceLine(child);
+  if (appearance) {
     parts.push(
-      `Appearance notes (for consistency, not to lecture about): ${[
-        child.hair,
-        child.eyes,
-        child.skin,
-        child.usualClothes,
-      ]
-        .filter(Boolean)
-        .join(", ")}.`,
+      `Appearance notes (for consistency, not to lecture about): ${appearance}.`,
     );
   }
   if (characters.length) {
@@ -94,4 +89,12 @@ export function describeChildForStory(child: Child, characters: StoryPerson[]) {
     );
   }
   return parts.join("\n");
+}
+
+export function coverImagePrompt(title: string, childName: string) {
+  return `FRONT COVER of this one children's picture book. The painted title on the cover reads exactly: "${title}". ${childName} is the hero, centered and inviting. Square hardcover. No barcode, no price, no publisher logo, no extra captions besides the title.`;
+}
+
+export function interiorImagePrompt(scene: string) {
+  return `INTERIOR PAGE of the SAME printed book as the cover. Same illustrator and character design. Scene: ${scene}. No text, no letters, no title, no watermark.`;
 }

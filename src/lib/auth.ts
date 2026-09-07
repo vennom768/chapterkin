@@ -11,13 +11,6 @@ import {
   sendVerificationLink,
 } from "@/lib/email";
 
-export function isEmailVerificationRequired() {
-  if (process.env.REQUIRE_EMAIL_VERIFICATION === "false") {
-    return false;
-  }
-  return true;
-}
-
 export const auth = betterAuth({
   baseURL: getAppUrl(),
   database: drizzleAdapter(db, {
@@ -27,8 +20,8 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,
-    requireEmailVerification: isEmailVerificationRequired(),
-    autoSignIn: !isEmailVerificationRequired(),
+    requireEmailVerification: false,
+    autoSignIn: true,
     revokeSessionsOnPasswordReset: true,
     resetPasswordTokenExpiresIn: 60 * 60,
     sendResetPassword: async ({ user, url }) => {

@@ -72,12 +72,24 @@ export function generateMockStory(input: MockInput) {
       imagePrompt: `${name} walking home toward porch light with ${parents}`,
     },
     {
+      text: `They sat on the hill and counted three quiet things: the wind, a far-away dog, and their own breathing. ${name} decided the day had been enough.`,
+      imagePrompt: `${name} sitting on a soft hill counting quiet things`,
+    },
+    {
+      text: `The beetle blinked a last time, like a tiny porch light. ${sibling ? `${sibling} yawned first. ` : ""}${name} yawned bigger.`,
+      imagePrompt: `tiny lantern beetle blinking near ${name}`,
+    },
+    {
       text: `Back in bed, ${name} was already half-asleep. ${parents} pulled the quilt to ${name}'s chin. "Tomorrow can wait," they said. ${name} nodded, and the room filled up with ordinary, perfect dark.`,
       imagePrompt: `${name} asleep, quilt tucked, night-light glow`,
     },
+    {
+      text: `"I will remember the hill," ${name} murmured. ${parents} said they would remember it too. Then there was only the quilt, and sleep.`,
+      imagePrompt: `${name} almost asleep, whispering about the hill`,
+    },
   ];
 
-  const used = child.age <= 4 ? pages.slice(0, 4) : pages;
+  const used = pages;
   const seriesTitle =
     input.series?.title ||
     (input.mode === "series" ? `The lantern nights of ${name}` : title);

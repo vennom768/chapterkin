@@ -12,9 +12,9 @@ export function getTrustedOrigins() {
     process.env.NEXT_PUBLIC_APP_URL,
     "https://chapterkin.com",
     "https://www.chapterkin.com",
+    "https://chapterkin-production.up.railway.app",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
   ];
-  if (process.env.NODE_ENV !== "production") {
-    origins.push("http://localhost:3000", "http://127.0.0.1:3000");
-  }
   return [...new Set(origins.filter((origin): origin is string => Boolean(origin)))];
 }

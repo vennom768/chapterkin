@@ -5,6 +5,7 @@ import { ollamaJsonChat } from "@/lib/ai/ollama";
 import { getOpenAI } from "@/lib/ai/openai";
 import { isLocalStoryProvider, isMockStoryProvider } from "@/lib/ai/provider";
 import { getAgeGuidance } from "@/lib/age";
+import { getIllustrationStyle } from "@/lib/illustration-styles";
 import type { StoryPerson } from "@/lib/ai/character-bible";
 import type { childProfile, storySeries } from "@/lib/db/schema";
 
@@ -20,8 +21,8 @@ const generatedStorySchema = z.object({
         imagePrompt: z.string().min(1),
       }),
     )
-    .min(3)
-    .max(8),
+    .min(6)
+    .max(10),
 });
 
 export type GeneratedStory = z.infer<typeof generatedStorySchema>;
@@ -36,6 +37,7 @@ export type StoryGenerationInput = {
   theme?: string | null;
   dailyPrompt?: string | null;
   series?: Series | null;
+  illustrationStyle?: string | null;
 };
 
 const SYSTEM_PROMPT = `You write original, kind bedtime stories for a parent to read aloud.
@@ -51,7 +53,8 @@ Hard rules:
 - If a daily moment is provided, weave it in naturally as part of the adventure. Do not paste it as a recap.
 - Inclusive, warm, and respectful.
 - Each page is a speak-aloud chunk, not a wall of text.
-- imagePrompt describes a single storybook scene with the same characters, no text in the image.
+- Write 8 to 10 interior story pages. Do not write a cover page. The app adds a titled cover separately.
+- imagePrompt describes one interior scene from the SAME picture book: same child, same clothes, same face, same art style. No text in the image.
 - Return JSON only that matches the requested schema.`;
 
 export async function generateStoryText(
@@ -62,6 +65,7 @@ export async function generateStoryText(
   }
 
   const guidance = getAgeGuidance(input.child.age);
+  const style = getIllustrationStyle(input.illustrationStyle);
 
   const seriesBlock =
     input.mode === "series" && input.series
@@ -86,8 +90,9 @@ Still include a short seriesSummary in case the parent later continues it, descr
 ${describeChildForStory(input.child, input.characters)}
 
 Age band: ${guidance.band}. ${guidance.tone}
-Target ${guidance.pages.min}–${guidance.pages.max} pages.
+Write ${guidance.pages.min}–${guidance.pages.max} interior pages (not including the cover).
 About ${guidance.wordsPerPage.min}–${guidance.wordsPerPage.max} words per page.
+Picture style for every page: ${style.name}. ${style.bible}
 
 Theme (optional): ${input.theme || "parent did not pick a theme — choose something cozy and fitting."}
 What happened today (optional): ${input.dailyPrompt || "none — invent a kind, original plot."}

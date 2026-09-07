@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { auth, isEmailVerificationRequired } from "@/lib/auth";
+import { isAdminEmail, isEmailVerificationRequired } from "@/lib/admin";
+import { auth } from "@/lib/auth";
 import { getFamilyWithMembers } from "@/lib/queries/family";
 
 export async function getCurrentUser() {
@@ -15,8 +16,20 @@ export async function requireUser() {
   if (!user) {
     redirect("/sign-in");
   }
-  if (isEmailVerificationRequired() && !user.emailVerified) {
+  if (
+    (await isEmailVerificationRequired()) &&
+    !user.emailVerified &&
+    !isAdminEmail(user.email)
+  ) {
     redirect(`/check-email?email=${encodeURIComponent(user.email)}`);
+  }
+  return user;
+}
+
+export async function requireAdmin() {
+  const user = await requireUser();
+  if (!isAdminEmail(user.email)) {
+    redirect("/home");
   }
   return user;
 }

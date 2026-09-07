@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 type Page = {
   id: string;
   pageIndex: number;
+  kind?: string | null;
   text: string;
   imageStatus: string;
   imagePath: string | null;
@@ -76,6 +77,9 @@ export function StoryReader({
 
   const status = imageStatus[page.id] ?? page.imageStatus;
   const showImage = status === "ready" || page.imagePath;
+  const isCover = page.kind === "cover";
+  const storyPages = pages.filter((item) => item.kind !== "cover");
+  const storyPageNumber = storyPages.findIndex((item) => item.id === page.id) + 1;
 
   const goBack = () => setIndex((value) => Math.max(0, value - 1));
   const goNext = () => setIndex((value) => Math.min(pages.length - 1, value + 1));
@@ -89,8 +93,14 @@ export function StoryReader({
             {chapterNumber ? ` · Chapter ${chapterNumber}` : ""}
           </p>
         ) : null}
-        <h1 className="font-serif text-2xl text-navy sm:text-3xl md:text-4xl">{title}</h1>
-        <p className="mt-1 text-sm text-muted">A Chapterkin story for {childName}</p>
+        {isCover ? (
+          <h1 className="font-serif text-2xl text-navy sm:text-3xl md:text-4xl">
+            A Chapterkin book
+          </h1>
+        ) : (
+          <h1 className="font-serif text-2xl text-navy sm:text-3xl md:text-4xl">{title}</h1>
+        )}
+        <p className="mt-1 text-sm text-muted">A story for {childName}</p>
       </div>
 
       <article
@@ -126,11 +136,19 @@ export function StoryReader({
           )}
         </div>
         <div className="px-5 py-6 sm:px-6 sm:py-8 md:px-10">
-          <p className="font-serif text-lg leading-8 text-foreground sm:text-xl md:text-2xl md:leading-9">
-            {page.text}
-          </p>
+          {isCover ? (
+            <p className="font-serif text-2xl leading-8 text-navy sm:text-3xl">
+              {title}
+            </p>
+          ) : (
+            <p className="font-serif text-lg leading-8 text-foreground sm:text-xl md:text-2xl md:leading-9">
+              {page.text}
+            </p>
+          )}
           <p className="mt-5 text-sm text-muted">
-            Page {index + 1} of {pages.length}
+            {isCover
+              ? "Cover"
+              : `Page ${storyPageNumber} of ${storyPages.length || pages.length}`}
           </p>
         </div>
       </article>
@@ -147,7 +165,7 @@ export function StoryReader({
         </Button>
         {index < pages.length - 1 ? (
           <Button className="w-full sm:w-auto" onClick={goNext}>
-            Next
+            {isCover ? "Open the book" : "Next"}
             <ChevronRight className="h-4 w-4" />
           </Button>
         ) : (
