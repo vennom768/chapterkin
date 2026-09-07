@@ -28,6 +28,13 @@ async function requireBillingUser(): Promise<
   return { ok: true, user };
 }
 
+function stripeErrorMessage(err: unknown, fallback: string) {
+  if (err && typeof err === "object" && "message" in err && typeof err.message === "string") {
+    return err.message;
+  }
+  return fallback;
+}
+
 export async function startCheckout(planId: string): Promise<BillingActionResult> {
   const auth = await requireBillingUser();
   if (!auth.ok) {
@@ -45,36 +52,41 @@ export async function startCheckout(planId: string): Promise<BillingActionResult
   }
   const plan = (await import("@/lib/plans")).PLANS[planId];
   const existing = await getSubscriptionForUser(auth.user.id);
-  const session = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    customer: existing?.stripeCustomerId ?? undefined,
-    customer_email: existing?.stripeCustomerId ? undefined : auth.user.email,
-    client_reference_id: auth.user.id,
-    metadata: { userId: auth.user.id, planId },
-    subscription_data: {
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      customer: existing?.stripeCustomerId ?? undefined,
+      customer_email: existing?.stripeCustomerId ? undefined : auth.user.email,
+      client_reference_id: auth.user.id,
       metadata: { userId: auth.user.id, planId },
-    },
-    line_items: [
-      {
-        price_data: {
-          currency: "usd",
-          unit_amount: plan.priceCents,
-          recurring: { interval: "month" },
-          product_data: {
-            name: `Chapterkin · ${plan.name}`,
-            description: plan.blurb,
-          },
-        },
-        quantity: 1,
+      subscription_data: {
+        metadata: { userId: auth.user.id, planId },
       },
-    ],
-    success_url: `${getAppUrl()}/billing?checkout=success`,
-    cancel_url: `${getAppUrl()}/pricing`,
-  });
-  if (!session.url) {
-    return { ok: false, error: "Stripe did not return a checkout URL." };
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            unit_amount: plan.priceCents,
+            recurring: { interval: "month" },
+            product_data: {
+              name: `Chapterkin · ${plan.name}`,
+              description: plan.blurb,
+              tax_code: "txcd_10103000",
+            },
+          },
+          quantity: 1,
+        },
+      ],
+      success_url: `${getAppUrl()}/billing?checkout=success`,
+      cancel_url: `${getAppUrl()}/pricing`,
+    });
+    if (!session.url) {
+      return { ok: false, error: "Stripe did not return a checkout URL." };
+    }
+    return { ok: true, url: session.url };
+  } catch (err) {
+    return { ok: false, error: stripeErrorMessage(err, "Could not start checkout.") };
   }
-  return { ok: true, url: session.url };
 }
 
 export async function openBillingPortal(): Promise<BillingActionResult> {
@@ -87,12 +99,16 @@ export async function openBillingPortal(): Promise<BillingActionResult> {
   if (!stripe || !existing?.stripeCustomerId) {
     return { ok: false, error: "No billing account yet.", redirectTo: "/pricing" };
   }
-  const portal = await stripe.billingPortal.sessions.create({
-    customer: existing.stripeCustomerId,
-    return_url: `${getAppUrl()}/billing`,
-  });
-  if (!portal.url) {
-    return { ok: false, error: "Could not open billing." };
+  try {
+    const portal = await stripe.billingPortal.sessions.create({
+      customer: existing.stripeCustomerId,
+      return_url: `${getAppUrl()}/billing`,
+    });
+    if (!portal.url) {
+      return { ok: false, error: "Could not open billing." };
+    }
+    return { ok: true, url: portal.url };
+  } catch (err) {
+    return { ok: false, error: stripeErrorMessage(err, "Could not open billing.") };
   }
-  return { ok: true, url: portal.url };
 }
