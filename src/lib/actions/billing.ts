@@ -11,9 +11,11 @@ export type BillingActionResult =
   | { ok: true; url: string }
   | { ok: false; error: string; redirectTo?: string };
 
-async function requireBillingUser(): Promise<
-  { ok: true; user: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>> } | BillingActionResult
-> {
+type BillingUserResult =
+  | { ok: true; user: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>> }
+  | { ok: false; error: string; redirectTo?: string };
+
+async function requireBillingUser(): Promise<BillingUserResult> {
   const user = await getCurrentUser();
   if (!user) {
     return { ok: false, error: "Sign in to continue.", redirectTo: "/sign-in" };
