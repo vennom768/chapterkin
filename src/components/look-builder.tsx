@@ -69,20 +69,26 @@ function SwatchRow({
 function AvatarPreview({
   skin,
   hair,
+  hairStyle,
   eyes,
   clothes,
+  sex,
   pet,
 }: {
   skin: string;
   hair: string;
+  hairStyle?: string;
   eyes: string;
   clothes: string;
+  sex?: string | null;
   pet?: boolean;
 }) {
   const skinColor = SKIN_TONES.find((item) => item.value === skin)?.color ?? "#f0c7a0";
   const hairColor = HAIR_COLORS.find((item) => item.value === hair)?.color ?? "#6b3f22";
   const eyeColor = EYE_COLORS.find((item) => item.value === eyes)?.color ?? "#5c3317";
   const petColor = PET_COLORS.find((item) => item.value === hair)?.color ?? "#6b3f22";
+  const style = hairStyle || (sex === "girl" ? "long" : sex === "boy" ? "short" : "");
+  const sexLabel = sex === "girl" ? "Girl" : sex === "boy" ? "Boy" : null;
 
   if (pet) {
     return (
@@ -105,8 +111,13 @@ function AvatarPreview({
     <div className="grid place-items-center rounded-[1.75rem] border border-border bg-[#fbf6ee] px-4 py-6">
       <div className="relative">
         <div
-          className="absolute left-1/2 top-[-10px] h-10 w-24 -translate-x-1/2 rounded-full"
-          style={{ backgroundColor: hair ? hairColor : "transparent" }}
+          className={cn(
+            "absolute left-1/2 -translate-x-1/2 rounded-full",
+            style === "long" || style === "wavy" || style === "curly" || style === "coily" || style === "braided"
+              ? "top-[-18px] h-16 w-28"
+              : "top-[-10px] h-10 w-24",
+          )}
+          style={{ backgroundColor: hair || style ? hairColor : "transparent" }}
         />
         <div
           className="relative grid h-28 w-28 place-items-center rounded-full border border-black/5"
@@ -120,7 +131,9 @@ function AvatarPreview({
         </div>
         <div className="mx-auto mt-[-6px] h-10 w-20 rounded-b-2xl bg-accent/80" title={clothes} />
       </div>
-      <p className="mt-3 text-sm font-semibold text-navy">Avatar preview</p>
+      <p className="mt-3 text-sm font-semibold text-navy">
+        {sexLabel ? `${sexLabel} · Avatar preview` : "Avatar preview"}
+      </p>
     </div>
   );
 }
@@ -130,6 +143,7 @@ export function LookBuilder({
   eyes,
   skin,
   usualClothes,
+  sex,
   kind = "person",
   names,
   onChange,
@@ -138,6 +152,7 @@ export function LookBuilder({
   eyes?: string | null;
   skin?: string | null;
   usualClothes?: string | null;
+  sex?: string | null;
   kind?: "person" | "pet";
   names?: PersonLook;
   onChange?: (look: PersonLook & { appearance: string; speciesOrBreed: string }) => void;
@@ -323,8 +338,10 @@ export function LookBuilder({
         pet={kind === "pet"}
         skin={skinTone}
         hair={hairColor}
+        hairStyle={kind === "pet" ? "" : hairStyle}
         eyes={kind === "pet" ? "" : eyeColor}
         clothes={clothes}
+        sex={kind === "pet" ? undefined : sex}
       />
 
       {kind === "pet" ? (

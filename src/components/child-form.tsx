@@ -10,6 +10,7 @@ import { AgeFields } from "@/components/age-fields";
 import { ChildSexFields } from "@/components/child-sex-fields";
 import { LookBuilder } from "@/components/look-builder";
 import { Textarea } from "@/components/ui/textarea";
+import { isChildSex, type ChildSex } from "@/lib/child-sex";
 
 export function ChildForm({
   child,
@@ -36,6 +37,7 @@ export function ChildForm({
   const [pending, setPending] = useState(false);
   const [age, setAge] = useState(String(child?.age ?? 5));
   const [ageMonths, setAgeMonths] = useState(String(child?.ageMonths ?? 0));
+  const [sex, setSex] = useState<ChildSex | "">(isChildSex(child?.sex) ? child.sex : "");
 
   return (
     <form
@@ -122,7 +124,7 @@ export function ChildForm({
           <input type="hidden" name="ageMonths" value={Number(age) < 1 ? ageMonths : ""} />
         </div>
         <div className="sm:col-span-2">
-          <ChildSexFields value={child?.sex} />
+          <ChildSexFields value={sex} onChange={setSex} />
         </div>
       </section>
 
@@ -178,6 +180,7 @@ export function ChildForm({
           eyes={child?.eyes}
           skin={child?.skin}
           usualClothes={child?.usualClothes}
+          sex={sex}
         />
         {child ? null : (
           <div className="mt-6 space-y-3">
