@@ -1,6 +1,7 @@
 import { after } from "next/server";
 import { notFound } from "next/navigation";
 import { StoryReader } from "@/components/story-reader";
+import { markStoryRead } from "@/lib/actions/story-sharing";
 import { getStoryForUser } from "@/lib/queries/stories";
 import { resolvedReaderTexts } from "@/lib/reader-levels";
 import { requireUser } from "@/lib/session";
@@ -19,6 +20,7 @@ export default async function StoryPage({
   }
   after(() => {
     void ensureStoryReaderLevels(result.pages);
+    void markStoryRead(result.story.id, user.id);
   });
   const pages = result.pages;
 
@@ -40,6 +42,7 @@ export default async function StoryPage({
         imageStatus: page.imageStatus,
         imagePath: page.imagePath,
       }))}
+      shareToken={result.story.shareToken}
     />
   );
 }

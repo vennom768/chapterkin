@@ -28,6 +28,18 @@ await client.unsafe(`
   ALTER TABLE household_member ADD COLUMN IF NOT EXISTS skin text;
   ALTER TABLE household_member ADD COLUMN IF NOT EXISTS usual_clothes text;
   ALTER TABLE story_page ADD COLUMN IF NOT EXISTS text_levels text;
+  ALTER TABLE child_profile ADD COLUMN IF NOT EXISTS selected_portrait_id text;
+  ALTER TABLE child_profile ADD COLUMN IF NOT EXISTS portrait_packs integer DEFAULT 0 NOT NULL;
+  ALTER TABLE story ADD COLUMN IF NOT EXISTS last_read_at timestamp;
+  ALTER TABLE story ADD COLUMN IF NOT EXISTS share_token text;
+`);
+
+await client.unsafe(`
+  UPDATE story SET last_read_at = created_at WHERE last_read_at IS NULL;
+`);
+
+await client.unsafe(`
+  CREATE UNIQUE INDEX IF NOT EXISTS story_share_token_idx ON story (share_token);
 `);
 
 await client.unsafe(`
@@ -81,6 +93,39 @@ await client.unsafe(`
     'Tester unlimited account'
   )
   ON CONFLICT (code_key) DO NOTHING;
+`);
+
+await client.unsafe(`
+  CREATE TABLE IF NOT EXISTS child_portrait (
+    id text PRIMARY KEY NOT NULL,
+    child_id text NOT NULL REFERENCES child_profile(id) ON DELETE cascade,
+    user_id text NOT NULL REFERENCES "user"(id) ON DELETE cascade,
+    image_path text NOT NULL,
+    source text NOT NULL,
+    note text,
+    created_at timestamp DEFAULT now() NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS portrait_pack_purchase (
+    id text PRIMARY KEY NOT NULL,
+    user_id text NOT NULL REFERENCES "user"(id) ON DELETE cascade,
+    child_id text NOT NULL REFERENCES child_profile(id) ON DELETE cascade,
+    amount_cents integer NOT NULL,
+    stripe_session_id text UNIQUE,
+    status text DEFAULT 'pending' NOT NULL,
+    created_at timestamp DEFAULT now() NOT NULL,
+    updated_at timestamp DEFAULT now() NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS analytics_event (
+    id text PRIMARY KEY NOT NULL,
+    user_id text,
+    name text NOT NULL,
+    properties text,
+    created_at timestamp DEFAULT now() NOT NULL
+  );
+`);
+
+await client.unsafe(`
+  DELETE FROM story WHERE last_read_at IS NOT NULL AND last_read_at < now() - interval '60 days';
 `);
 
 await client.end();

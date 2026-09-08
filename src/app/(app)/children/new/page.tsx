@@ -10,8 +10,8 @@ export default async function NewChildPage() {
       <div>
         <h1 className="font-serif text-3xl text-navy sm:text-4xl">Add a child</h1>
         <p className="mt-1 text-muted">
-          They&apos;ll join the family and can appear as a sibling in other
-          kids&apos; stories.
+          Save their details, then draw a storybook picture of them before you
+          write a story.
         </p>
       </div>
       <Card>

@@ -1,13 +1,17 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, gte, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { childProfile, story, storyPage, storySeries } from "@/lib/db/schema";
+import { isStoryExpired, storyRetentionCutoff } from "@/lib/story-retention";
 
 export async function listStories(userId: string, filters?: {
   childId?: string;
   seriesId?: string;
   standaloneOnly?: boolean;
 }) {
-  const conditions = [eq(story.userId, userId)];
+  const conditions = [
+    eq(story.userId, userId),
+    gte(story.lastReadAt, storyRetentionCutoff()),
+  ];
   if (filters?.childId) {
     conditions.push(eq(story.childId, filters.childId));
   }
@@ -72,7 +76,7 @@ export async function getStoryForUser(userId: string, storyId: string) {
     .where(and(eq(story.id, storyId), eq(story.userId, userId)))
     .limit(1);
 
-  if (!row) {
+  if (!row || isStoryExpired(row.story.lastReadAt)) {
     return null;
   }
 

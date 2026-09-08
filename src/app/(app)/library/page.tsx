@@ -33,7 +33,8 @@ export default async function LibraryPage({
       <div>
         <h1 className="font-serif text-3xl text-navy sm:text-4xl">Family library</h1>
         <p className="mt-1 text-muted">
-          Every night, for every child. Re-read or write the next chapter.
+          Every night, for every child. Books stay for 60 days after the last
+          read. Re-read, download a PDF, or share a link.
         </p>
       </div>
 

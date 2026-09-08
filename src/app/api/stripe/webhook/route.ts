@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
+import { fulfillPortraitPack } from "@/lib/actions/portraits";
 import { fulfillPageRevision } from "@/lib/actions/revisions";
 import { upsertSubscription } from "@/lib/billing";
 import { isPlanId } from "@/lib/plans";
@@ -55,6 +56,8 @@ export async function POST(request: Request) {
     const userId = session.client_reference_id ?? session.metadata?.userId;
     if (session.metadata?.kind === "page_revision" && session.metadata.revisionId) {
       await fulfillPageRevision(session.metadata.revisionId);
+    } else if (session.metadata?.kind === "portrait_pack" && session.metadata.purchaseId) {
+      await fulfillPortraitPack(session.metadata.purchaseId);
     } else if (userId && session.subscription) {
       const sub = await stripe.subscriptions.retrieve(String(session.subscription));
       await syncSubscription(sub, userId);

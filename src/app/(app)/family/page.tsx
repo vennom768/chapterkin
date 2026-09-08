@@ -82,6 +82,12 @@ export default async function FamilyPage() {
                   New story
                 </Link>
                 <Link
+                  href={`/children/${child.id}/portrait`}
+                  className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-border bg-white px-5 py-2.5 text-sm font-semibold text-navy hover:bg-gold/20 sm:w-auto"
+                >
+                  {child.selectedPortraitId ? "Child drawing" : "Draw their picture"}
+                </Link>
+                <Link
                   href={`/children/${child.id}`}
                   className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-border bg-white px-5 py-2.5 text-sm font-semibold text-navy hover:bg-gold/20 sm:w-auto"
                 >

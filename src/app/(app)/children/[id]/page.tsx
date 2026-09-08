@@ -31,12 +31,20 @@ export default async function EditChildPage({
             the family page.
           </p>
         </div>
-        <Link
-          href={`/stories/new?childId=${child.id}`}
-          className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent-dark sm:w-auto"
-        >
-          New story
-        </Link>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          <Link
+            href={`/children/${child.id}/portrait`}
+            className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-border bg-white px-5 py-2.5 text-sm font-semibold text-navy hover:bg-gold/20 sm:w-auto"
+          >
+            {child.selectedPortraitId ? "Child drawing" : "Draw their picture"}
+          </Link>
+          <Link
+            href={`/stories/new?childId=${child.id}`}
+            className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent-dark sm:w-auto"
+          >
+            New story
+          </Link>
+        </div>
       </div>
       <Card>
         <ChildForm child={child} />

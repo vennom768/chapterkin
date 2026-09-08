@@ -18,6 +18,7 @@ import {
   type ReaderLevelId,
   type ReaderTexts,
 } from "@/lib/reader-levels";
+import { StoryShareControls } from "@/components/story-share-controls";
 import { cn } from "@/lib/utils";
 
 type Page = {
@@ -39,6 +40,8 @@ export function StoryReader({
   seriesTitle,
   chapterNumber,
   pages,
+  shared = false,
+  shareToken = null,
 }: {
   storyId: string;
   title: string;
@@ -48,6 +51,8 @@ export function StoryReader({
   seriesTitle?: string | null;
   chapterNumber?: number | null;
   pages: Page[];
+  shared?: boolean;
+  shareToken?: string | null;
 }) {
   const [index, setIndex] = useState(0);
   const [readerLevel, setReaderLevel] = useState<ReaderLevelId>(DEFAULT_READER_LEVEL);
@@ -192,12 +197,23 @@ export function StoryReader({
             </div>
           ) : null}
         </div>
-        <Link
-          href={`/stories/${storyId}/edit`}
-          className="mt-2 inline-flex text-sm font-semibold text-accent"
-        >
-          Revise pages
-        </Link>
+        {shared ? null : (
+          <Link
+            href={`/stories/${storyId}/edit`}
+            className="mt-2 inline-flex text-sm font-semibold text-accent"
+          >
+            Revise pages
+          </Link>
+        )}
+        <StoryShareControls
+          storyId={storyId}
+          pdfHref={
+            shareToken
+              ? `/api/stories/${storyId}/pdf?share=${shareToken}`
+              : `/api/stories/${storyId}/pdf`
+          }
+          canShare={!shared}
+        />
       </div>
 
       <article
@@ -220,7 +236,11 @@ export function StoryReader({
           {showImage ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={`/api/pages/${page.id}/image`}
+              src={
+                shareToken
+                  ? `/api/pages/${page.id}/image?share=${shareToken}`
+                  : `/api/pages/${page.id}/image`
+              }
               alt=""
               className="h-full w-full object-cover"
             />
@@ -280,13 +300,15 @@ export function StoryReader({
           </Button>
         ) : (
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:justify-end">
-            <Link
-              href={`/stories/${storyId}/edit`}
-              className="inline-flex min-h-11 items-center justify-center rounded-full border border-border bg-white px-5 py-2.5 text-sm font-semibold text-navy hover:bg-gold/20"
-            >
-              Revise pages
-            </Link>
-            {seriesId ? (
+            {shared ? null : (
+              <Link
+                href={`/stories/${storyId}/edit`}
+                className="inline-flex min-h-11 items-center justify-center rounded-full border border-border bg-white px-5 py-2.5 text-sm font-semibold text-navy hover:bg-gold/20"
+              >
+                Revise pages
+              </Link>
+            )}
+            {!shared && seriesId ? (
               <Link
                 href={`/stories/new?childId=${encodeURIComponent(childId)}&seriesId=${encodeURIComponent(seriesId)}`}
                 className="inline-flex min-h-11 items-center justify-center rounded-full border border-border bg-white px-5 py-2.5 text-sm font-semibold text-navy hover:bg-gold/20"
@@ -295,10 +317,10 @@ export function StoryReader({
               </Link>
             ) : null}
             <Link
-              href="/library"
+              href={shared ? "/" : "/library"}
               className="inline-flex min-h-11 items-center justify-center rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent-dark"
             >
-              Library
+              {shared ? "ChapterKin" : "Library"}
             </Link>
           </div>
         )}

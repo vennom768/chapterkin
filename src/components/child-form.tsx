@@ -138,8 +138,9 @@ export function ChildForm({
       <section>
         <h2 className="font-serif text-xl text-navy">Build how they look</h2>
         <p className="mb-4 mt-1 text-sm text-muted">
-          Tap face, hair, eyes, and clothes like an avatar. You can change or
-          clear any piece. Extra notes are optional and fully editable.
+          Tap face, hair, eyes, and clothes like an avatar. After you save,
+          you&apos;ll draw a storybook picture of them and can iterate before
+          any story is written.
         </p>
         <LookBuilder
           hair={child?.hair}

@@ -4,6 +4,7 @@ import { after } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { trackEvent } from "@/lib/analytics";
 import { illustrateStory } from "@/lib/ai/images";
 import { checkPromptSafety } from "@/lib/ai/safety";
 import { generateStoryText } from "@/lib/ai/stories";
@@ -142,6 +143,7 @@ export async function createStory(input: z.infer<typeof generateSchema>) {
     synopsis: generated.synopsis,
     illustrationStyle,
     status: "ready",
+    lastReadAt: now,
     createdAt: now,
   });
 
@@ -189,6 +191,10 @@ export async function createStory(input: z.infer<typeof generateSchema>) {
   }
 
   after(async () => {
+    await trackEvent("story_created", {
+      userId: user.id,
+      properties: { storyId, childId: parsed.childId },
+    });
     await illustrateStory(storyId);
   });
 

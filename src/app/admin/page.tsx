@@ -1,4 +1,4 @@
-import { count, desc } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import { setAdminViewMode, updateSiteSetting } from "@/lib/actions/admin";
 import { setPromoCodeActive } from "@/lib/actions/promo";
 import { isEmailVerificationRequired } from "@/lib/admin";
@@ -6,18 +6,17 @@ import { AdminPromoForm } from "@/components/admin-promo-form";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { db } from "@/lib/db";
-import { family, story, user } from "@/lib/db/schema";
+import { user } from "@/lib/db/schema";
+import { getAdminDashboardStats } from "@/lib/queries/admin-stats";
 import { listPromoCodesWithUsage, PROMO_BENEFITS, isPromoBenefit } from "@/lib/promo";
 import { requireAdmin } from "@/lib/session";
 
 export default async function AdminPage() {
   await requireAdmin();
-  const [requireVerification, [userStats], [familyStats], [storyStats], recentUsers, promoCodes] =
+  const [requireVerification, stats, recentUsers, promoCodes] =
     await Promise.all([
       isEmailVerificationRequired(),
-      db.select({ total: count() }).from(user),
-      db.select({ total: count() }).from(family),
-      db.select({ total: count() }).from(story),
+      getAdminDashboardStats(),
       db
         .select({
           id: user.id,
@@ -132,26 +131,94 @@ export default async function AdminPage() {
         </form>
       </Card>
 
+      <div>
+        <h2 className="font-serif text-2xl text-navy">Dashboard</h2>
+        <p className="mt-1 text-sm text-muted">
+          Counts from the live database, plus events we record as families use
+          ChapterKin.
+        </p>
+      </div>
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">
             Accounts
           </p>
-          <p className="mt-1 font-serif text-3xl text-navy">{userStats.total}</p>
+          <p className="mt-1 font-serif text-3xl text-navy">{stats.users}</p>
         </Card>
         <Card>
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">
             Families
           </p>
-          <p className="mt-1 font-serif text-3xl text-navy">{familyStats.total}</p>
+          <p className="mt-1 font-serif text-3xl text-navy">{stats.families}</p>
         </Card>
         <Card>
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-            Stories
+            Children
           </p>
-          <p className="mt-1 font-serif text-3xl text-navy">{storyStats.total}</p>
+          <p className="mt-1 font-serif text-3xl text-navy">{stats.children}</p>
+        </Card>
+        <Card>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+            Active books
+          </p>
+          <p className="mt-1 font-serif text-3xl text-navy">{stats.activeStories}</p>
+          <p className="mt-1 text-xs text-muted">{stats.stories} ever written</p>
+        </Card>
+        <Card>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+            Stories this week
+          </p>
+          <p className="mt-1 font-serif text-3xl text-navy">{stats.storiesWeek}</p>
+          <p className="mt-1 text-xs text-muted">{stats.storiesMonth} in 30 days</p>
+        </Card>
+        <Card>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+            Child drawings
+          </p>
+          <p className="mt-1 font-serif text-3xl text-navy">{stats.portraits}</p>
+        </Card>
+        <Card>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+            Paying / promo
+          </p>
+          <p className="mt-1 font-serif text-3xl text-navy">{stats.paying}</p>
         </Card>
       </div>
+      <Card>
+        <h2 className="mb-4 font-serif text-2xl text-navy">Activity</h2>
+        {stats.events.length === 0 ? (
+          <p className="text-sm text-muted">No tracked events in the last 30 days.</p>
+        ) : (
+          <ul className="divide-y divide-border">
+            {stats.events.map((event) => (
+              <li key={event.name} className="flex justify-between gap-3 py-2">
+                <p className="font-mono text-sm text-navy">{event.name}</p>
+                <p className="text-sm text-muted">
+                  {event.week} / 7d · {event.month} / 30d
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+      {stats.plans.length ? (
+        <Card>
+          <h2 className="mb-4 font-serif text-2xl text-navy">Plans</h2>
+          <ul className="divide-y divide-border">
+            {stats.plans.map((row) => (
+              <li
+                key={`${row.planId}-${row.status}`}
+                className="flex justify-between py-2 text-sm"
+              >
+                <span className="text-navy">
+                  {row.planId} · {row.status}
+                </span>
+                <span className="text-muted">{row.total}</span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      ) : null}
 
       <Card>
         <h2 className="mb-4 font-serif text-2xl text-navy">Recent accounts</h2>

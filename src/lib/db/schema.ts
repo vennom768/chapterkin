@@ -91,6 +91,8 @@ export const childProfile = pgTable("child_profile", {
   usualClothes: text("usual_clothes"),
   favoriteThings: text("favorite_things"),
   notes: text("notes"),
+  selectedPortraitId: text("selected_portrait_id"),
+  portraitPacks: integer("portrait_packs").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -149,6 +151,8 @@ export const story = pgTable("story", {
   illustrationStyle: text("illustration_style").notNull().default("watercolor"),
   status: text("status").notNull().default("generating"),
   errorMessage: text("error_message"),
+  lastReadAt: timestamp("last_read_at").notNull().defaultNow(),
+  shareToken: text("share_token").unique(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -268,6 +272,43 @@ export const promoCode = pgTable("promo_code", {
   note: text("note"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const childPortrait = pgTable("child_portrait", {
+  id: text("id").primaryKey(),
+  childId: text("child_id")
+    .notNull()
+    .references(() => childProfile.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  imagePath: text("image_path").notNull(),
+  source: text("source").notNull(),
+  note: text("note"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const portraitPackPurchase = pgTable("portrait_pack_purchase", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  childId: text("child_id")
+    .notNull()
+    .references(() => childProfile.id, { onDelete: "cascade" }),
+  amountCents: integer("amount_cents").notNull(),
+  stripeSessionId: text("stripe_session_id").unique(),
+  status: text("status").notNull().default("pending"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const analyticsEvent = pgTable("analytics_event", {
+  id: text("id").primaryKey(),
+  userId: text("user_id"),
+  name: text("name").notNull(),
+  properties: text("properties"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const promoRedemption = pgTable("promo_redemption", {

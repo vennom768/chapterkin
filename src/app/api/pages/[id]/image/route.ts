@@ -5,28 +5,36 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { story, storyPage } from "@/lib/db/schema";
+import { isStoryExpired } from "@/lib/story-retention";
 
 export async function GET(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  const session = await auth.api.getSession({ headers: request.headers });
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   const { id } = await context.params;
+  const share = new URL(request.url).searchParams.get("share");
+  const session = await auth.api.getSession({ headers: request.headers });
+
   const [row] = await db
     .select({
       page: storyPage,
-      userId: story.userId,
+      story,
     })
     .from(storyPage)
     .innerJoin(story, eq(storyPage.storyId, story.id))
-    .where(and(eq(storyPage.id, id), eq(story.userId, session.user.id)))
+    .where(
+      and(
+        eq(storyPage.id, id),
+        share
+          ? eq(story.shareToken, share)
+          : session?.user
+            ? eq(story.userId, session.user.id)
+            : eq(story.id, "__none__"),
+      ),
+    )
     .limit(1);
 
-  if (!row?.page.imagePath) {
+  if (!row?.page.imagePath || isStoryExpired(row.story.lastReadAt)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

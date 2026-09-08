@@ -78,8 +78,9 @@ export default async function LandingPage() {
               through the gentle rain.
             </p>
             <p className="mt-6 text-sm text-muted">
-              Stories remember the people and pets you list. Pictures use the
-              appearance notes you write — no photos needed.
+              Stories remember the people and pets you list. You can build a
+              look or use a photo once to draw your child. We never keep the
+              photo.
             </p>
           </div>
         </section>

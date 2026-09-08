@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { eq } from "drizzle-orm";
 import {
@@ -7,14 +7,14 @@ import {
   interiorImagePrompt,
   storyName,
 } from "@/lib/ai/character-bible";
-import { formatAgeForArt } from "@/lib/age";
+import { generateImagePng } from "@/lib/ai/image-generate";
 import { generateLocalPng } from "@/lib/ai/local-images";
 import { mockPageSvg } from "@/lib/ai/mock-images";
-import { storyImageFallbackModel, storyImageModel } from "@/lib/ai/models";
-import { getOpenAI } from "@/lib/ai/openai";
+import { storageImagePath } from "@/lib/ai/portraits";
 import { isLocalStoryProvider, isMockStoryProvider } from "@/lib/ai/provider";
+import { formatAgeForArt } from "@/lib/age";
 import { db } from "@/lib/db";
-import { story, storyPage } from "@/lib/db/schema";
+import { childPortrait, story, storyPage } from "@/lib/db/schema";
 import { getChildWithStoryCast } from "@/lib/queries/children";
 
 const STORAGE_DIR = path.join(process.cwd(), "storage", "images");
@@ -25,59 +25,38 @@ function pagePrompt(
   childName: string,
   ageForArt: string,
   page: { kind: string; imagePrompt: string; pageIndex: number },
+  hasPortrait: boolean,
 ) {
   const scene =
     page.kind === "cover"
       ? coverImagePrompt(title, childName, ageForArt)
       : interiorImagePrompt(page.imagePrompt, childName, ageForArt);
-  return `${bible} ${scene} ${childName} is ${ageForArt} on this page too. This is page ${page.pageIndex + 1} of the same book.`;
+  const likeness = hasPortrait
+    ? ` The attached image is the official ChapterKin drawing of ${childName}. Keep that exact face, hair, skin, and age in this scene.`
+    : "";
+  return `${bible} ${scene} ${childName} is ${ageForArt} on this page too. This is page ${page.pageIndex + 1} of the same book.${likeness}`;
 }
 
-async function imageBufferFromResult(result: {
-  data?: Array<{ b64_json?: string | null; url?: string | null }> | null;
-}) {
-  const b64 = result.data?.[0]?.b64_json;
-  if (b64) {
-    return Buffer.from(b64, "base64");
+async function loadSelectedPortrait(childId: string, selectedPortraitId?: string | null) {
+  if (!selectedPortraitId) return null;
+  const [portrait] = await db
+    .select()
+    .from(childPortrait)
+    .where(eq(childPortrait.id, selectedPortraitId))
+    .limit(1);
+  if (!portrait || portrait.childId !== childId || !portrait.imagePath) {
+    return null;
   }
-  const url = result.data?.[0]?.url;
-  if (url) {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error("Failed to download generated image");
-    }
-    return Buffer.from(await response.arrayBuffer());
+  try {
+    const buffer = await readFile(storageImagePath(portrait.imagePath));
+    return {
+      buffer,
+      mime: portrait.imagePath.endsWith(".svg") ? "image/svg+xml" : "image/png",
+      filename: path.basename(portrait.imagePath),
+    };
+  } catch {
+    return null;
   }
-  return null;
-}
-
-async function generateImagePng(prompt: string): Promise<Buffer> {
-  const openai = getOpenAI();
-  const models = [storyImageModel(), storyImageFallbackModel()].filter(
-    (model, index, list) => list.indexOf(model) === index,
-  );
-
-  let lastError: unknown;
-  for (const model of models) {
-    try {
-      const result = await openai.images.generate({
-        model,
-        prompt,
-        size: "1024x1024",
-        quality: "medium",
-      });
-      const buffer = await imageBufferFromResult(result);
-      if (buffer) {
-        return buffer;
-      }
-    } catch (error) {
-      lastError = error;
-    }
-  }
-
-  throw lastError instanceof Error
-    ? lastError
-    : new Error("Image model did not return image data");
 }
 
 export async function illustrateStory(storyId: string, pageIds?: string[]) {
@@ -100,6 +79,10 @@ export async function illustrateStory(storyId: string, pageIds?: string[]) {
     .select()
     .from(storyPage)
     .where(eq(storyPage.storyId, storyId));
+  const portrait = await loadSelectedPortrait(
+    cast.child.id,
+    cast.child.selectedPortraitId,
+  );
 
   await mkdir(STORAGE_DIR, { recursive: true });
 
@@ -139,10 +122,11 @@ export async function illustrateStory(storyId: string, pageIds?: string[]) {
         storyName(cast.child),
         formatAgeForArt(cast.child.age, cast.child.ageMonths),
         page,
+        Boolean(portrait),
       );
       const png = isLocalStoryProvider()
         ? await generateLocalPng(prompt)
-        : await generateImagePng(prompt);
+        : await generateImagePng(prompt, portrait ?? undefined);
       const filename = `${page.id}.png`;
       const absolute = path.join(STORAGE_DIR, filename);
       await writeFile(absolute, png);

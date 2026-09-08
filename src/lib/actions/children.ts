@@ -8,6 +8,7 @@ import { db } from "@/lib/db";
 import { childProfile } from "@/lib/db/schema";
 import { getFamilyForUser } from "@/lib/queries/family";
 import { listChildren } from "@/lib/queries/children";
+import { trackEvent } from "@/lib/analytics";
 import { requireUser } from "@/lib/session";
 import { createId } from "@/lib/utils";
 
@@ -122,7 +123,11 @@ export async function saveChild(formData: FormData) {
 
   revalidatePath("/family");
   revalidatePath("/home");
-  redirect(`/children/${id}`);
+  void trackEvent("child_created", {
+    userId: user.id,
+    properties: { childId: id },
+  });
+  redirect(`/children/${id}/portrait`);
 }
 
 export async function deleteChild(childId: string) {
