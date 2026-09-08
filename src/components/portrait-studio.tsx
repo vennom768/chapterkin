@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
-  generateChildPortrait,
+  generateInitialPortraits,
   selectChildPortrait,
   startPortraitPackCheckout,
 } from "@/lib/actions/portraits";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   portraitPackPriceLabel,
   portraitsRemaining,
@@ -41,105 +40,17 @@ export function PortraitStudio({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-serif text-2xl text-navy">Draw {childName}</h2>
+        <h2 className="font-serif text-2xl text-navy">Pick {childName}&apos;s drawing</h2>
         <p className="mt-1 text-sm text-muted">
-          Build from the look you already chose, or use a photo once. You get
-          three drawings, then pick the one stories should use.
+          Stories will use the picture you pick. You can buy three more later if
+          none of these feel right.
         </p>
       </div>
-
-      <div className="rounded-2xl border border-border bg-gold/15 px-4 py-3 text-sm text-navy">
-        <p className="font-semibold">Photos are temporary.</p>
-        <p className="mt-1 text-muted">
-          If you upload a picture, ChapterKin uses it only to draw this one
-          portrait, then discards it. We do not store photos of your child. The
-          drawing we keep is the storybook picture, not the photo.
-        </p>
-      </div>
-
-      <form
-        className="space-y-4"
-        onSubmit={async (event) => {
-          event.preventDefault();
-          setPending(true);
-          setError(null);
-          const formData = new FormData(event.currentTarget);
-          formData.set("childId", childId);
-          const photo = formData.get("photo");
-          if (photo instanceof File && photo.size === 0) {
-            formData.delete("photo");
-          }
-          try {
-            const result = await generateChildPortrait(formData);
-            if (!result.ok) {
-              setError(result.error);
-              if (result.redirectTo) {
-                window.location.href = result.redirectTo;
-              }
-              return;
-            }
-          } catch (err) {
-            setError(err instanceof Error ? err.message : "Could not draw this picture.");
-          } finally {
-            setPending(false);
-          }
-        }}
-      >
-        <input type="hidden" name="childId" value={childId} />
-        <div>
-          <Label htmlFor="photo">Optional photo (used once, never stored)</Label>
-          <input
-            id="photo"
-            name="photo"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="mt-1 block w-full text-sm text-navy file:mr-3 file:rounded-full file:border-0 file:bg-white file:px-4 file:py-2 file:text-sm file:font-semibold file:text-navy"
-          />
-        </div>
-        <div>
-          <Label htmlFor="note">What should this drawing change?</Label>
-          <Textarea
-            id="note"
-            name="note"
-            rows={2}
-            placeholder="Curly hair. Freckles. Favorite yellow raincoat."
-          />
-        </div>
-        {remaining > 0 ? (
-          <Button type="submit" disabled={pending}>
-            {pending
-              ? "Drawing..."
-              : portraits.length
-                ? `Draw another (${remaining} left)`
-                : "Draw my child"}
-          </Button>
-        ) : (
-          <Button
-            type="button"
-            disabled={pending}
-            onClick={async () => {
-              setPending(true);
-              setError(null);
-              const result = await startPortraitPackCheckout(childId);
-              if (!result.ok) {
-                setError(result.error);
-                setPending(false);
-                return;
-              }
-              window.location.href = result.url;
-            }}
-          >
-            Get 3 more drawings · {portraitPackPriceLabel()}
-          </Button>
-        )}
-      </form>
-
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
 
       {portraits.length ? (
         <div>
           <p className="mb-3 text-sm font-semibold text-navy">
-            Pick the drawing stories should use
+            Tap the one stories should use
           </p>
           <div className="grid gap-3 sm:grid-cols-3">
             {portraits.map((portrait) => {
@@ -161,11 +72,7 @@ export function PortraitStudio({
                     className="aspect-square w-full object-cover"
                   />
                   <p className="px-3 py-2 text-xs font-semibold text-navy">
-                    {selected
-                      ? "Using this one"
-                      : portrait.source === "photo"
-                        ? "From a photo"
-                        : "From the look"}
+                    {selected ? "Using this one" : "Use this one"}
                   </p>
                 </button>
               );
@@ -173,10 +80,65 @@ export function PortraitStudio({
           </div>
         </div>
       ) : (
-        <p className="text-sm text-muted">
-          No drawings yet. Generate the first one before you write a story.
-        </p>
+        <div className="space-y-3">
+          <p className="text-sm text-muted">
+            We don&apos;t have drawings yet. We can make three from the look you
+            built.
+          </p>
+          <Button
+            type="button"
+            disabled={pending}
+            onClick={async () => {
+              setPending(true);
+              setError(null);
+              try {
+                const result = await generateInitialPortraits(childId);
+                if (!result.ok) {
+                  setError(result.error);
+                }
+              } catch (err) {
+                setError(err instanceof Error ? err.message : "Could not draw these pictures.");
+              } finally {
+                setPending(false);
+              }
+            }}
+          >
+            {pending ? "Drawing three pictures..." : "Draw three pictures"}
+          </Button>
+        </div>
       )}
+
+      {selectedPortraitId ? (
+        <Link
+          href={`/stories/new?childId=${childId}`}
+          className="inline-flex min-h-11 items-center justify-center rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent-dark"
+        >
+          Write a story
+        </Link>
+      ) : null}
+
+      {portraits.length > 0 && remaining <= 0 ? (
+        <Button
+          type="button"
+          variant="secondary"
+          disabled={pending}
+          onClick={async () => {
+            setPending(true);
+            setError(null);
+            const result = await startPortraitPackCheckout(childId);
+            if (!result.ok) {
+              setError(result.error);
+              setPending(false);
+              return;
+            }
+            window.location.href = result.url;
+          }}
+        >
+          Get 3 more drawings · {portraitPackPriceLabel()}
+        </Button>
+      ) : null}
+
+      {error ? <p className="text-sm text-red-700">{error}</p> : null}
     </div>
   );
 }

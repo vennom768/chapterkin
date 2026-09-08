@@ -31,8 +31,7 @@ export default async function ChildPortraitPage({
           {child.calledBy || child.name}&apos;s drawing
         </h1>
         <p className="mt-1 text-muted">
-          Iterate here before you write a story. The drawing you pick is the
-          child who appears in the book.
+          Pick the drawing that should appear in their stories.
         </p>
       </div>
       <Card>

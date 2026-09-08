@@ -39,6 +39,10 @@ export function ChildForm({
       action={async (formData) => {
         setPending(true);
         setError(null);
+        const photo = formData.get("photo");
+        if (photo instanceof File && photo.size === 0) {
+          formData.delete("photo");
+        }
         try {
           await saveChild(formData);
         } catch (err) {
@@ -138,9 +142,9 @@ export function ChildForm({
       <section>
         <h2 className="font-serif text-xl text-navy">Build how they look</h2>
         <p className="mb-4 mt-1 text-sm text-muted">
-          Tap face, hair, eyes, and clothes like an avatar. After you save,
-          you&apos;ll draw a storybook picture of them and can iterate before
-          any story is written.
+          Tap face, hair, eyes, and clothes. You can also add a photo if you
+          want. When you save, we draw three storybook pictures and you pick
+          the one stories should use.
         </p>
         <LookBuilder
           hair={child?.hair}
@@ -148,6 +152,27 @@ export function ChildForm({
           skin={child?.skin}
           usualClothes={child?.usualClothes}
         />
+        {child ? null : (
+          <div className="mt-6 space-y-3">
+            <div>
+              <Label htmlFor="photo">Optional photo</Label>
+              <input
+                id="photo"
+                name="photo"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="mt-1 block w-full text-sm text-navy file:mr-3 file:rounded-full file:border-0 file:bg-white file:px-4 file:py-2 file:text-sm file:font-semibold file:text-navy"
+              />
+            </div>
+            <div className="rounded-2xl border border-border bg-gold/15 px-4 py-3 text-sm text-navy">
+              <p className="font-semibold">Photos are temporary.</p>
+              <p className="mt-1 text-muted">
+                We use a photo only to draw these three pictures, then discard
+                it. We do not store photos of your child.
+              </p>
+            </div>
+          </div>
+        )}
       </section>
 
       <section>
@@ -164,7 +189,13 @@ export function ChildForm({
       {error ? <p className="text-sm text-red-700">{error}</p> : null}
 
       <Button type="submit" disabled={pending}>
-        {pending ? "Saving..." : child ? "Save profile" : "Add child"}
+        {pending
+          ? child
+            ? "Saving..."
+            : "Saving and drawing three pictures..."
+          : child
+            ? "Save profile"
+            : "Save and draw three pictures"}
       </Button>
     </form>
   );

@@ -9,6 +9,7 @@ import { childProfile } from "@/lib/db/schema";
 import { getFamilyForUser } from "@/lib/queries/family";
 import { listChildren } from "@/lib/queries/children";
 import { trackEvent } from "@/lib/analytics";
+import { generatePortraitBatch, readTemporaryPhoto } from "@/lib/actions/portraits";
 import { requireUser } from "@/lib/session";
 import { createId } from "@/lib/utils";
 
@@ -101,6 +102,12 @@ export async function saveChild(formData: FormData) {
   }
 
   const id = createId();
+  let photo;
+  try {
+    photo = await readTemporaryPhoto(formData);
+  } catch (error) {
+    throw error instanceof Error ? error : new Error("Could not read that photo.");
+  }
   await db.insert(childProfile).values({
     id,
     userId: user.id,
@@ -121,8 +128,22 @@ export async function saveChild(formData: FormData) {
     updatedAt: now,
   });
 
+  const [child] = await db
+    .select()
+    .from(childProfile)
+    .where(eq(childProfile.id, id))
+    .limit(1);
+  if (child) {
+    try {
+      await generatePortraitBatch(user.id, child, 3, photo);
+    } catch (error) {
+      console.error("Initial child portraits failed", error);
+    }
+  }
+
   revalidatePath("/family");
   revalidatePath("/home");
+  revalidatePath(`/children/${id}/portrait`);
   void trackEvent("child_created", {
     userId: user.id,
     properties: { childId: id },
