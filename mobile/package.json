@@ -31,8 +31,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "eas:ios": "eas build --platform ios --profile preview",
-    "eas:android": "eas build --platform android --profile preview"
+    "eas:ios": "npx eas-cli build --platform ios --profile preview",
+    "eas:android": "npx eas-cli build --platform android --profile preview"
   },
   "private": true
 }

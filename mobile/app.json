@@ -28,7 +28,11 @@
         "backgroundColor": "#f7f0e4",
         "foregroundImage": "./assets/adaptive-icon.png"
       },
-      "permissions": ["CAMERA", "READ_MEDIA_IMAGES"],
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.RECORD_AUDIO"
+      ],
       "predictiveBackGestureEnabled": false
     },
     "plugins": [
@@ -45,6 +49,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "63b1058c-944e-4636-b867-d2405c40378c"
+      }
+    },
+    "owner": "mcharrisp"
   }
 }
