@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { attachReaderLevelVariants } from "@/lib/ai/reader-variants";
 import { storyTextModel } from "@/lib/ai/models";
 import { getOpenAI } from "@/lib/ai/openai";
 import { isLocalStoryProvider, isMockStoryProvider } from "@/lib/ai/provider";
@@ -37,8 +38,7 @@ Keep the rest of the book consistent. Soft, kind, bedtime-safe language.
 Keep the child the same age in the text and in every imagePrompt unless the parent revision notes explicitly ask to change their age.
 If a selected page is the cover, keep the painted-title idea in imagePrompt and use the requested title change in text if the parent asked for one.
 imagePrompt describes one interior or cover scene with no extra captions except a cover title. Include the child's age.
-For interior pages, also return textEarly (learn-to-read, 1–2 short sentences) and textGrowing (richer wording) of the SAME revised events.
-Return JSON only: { pages: [{ pageId, text, textEarly, textGrowing, imagePrompt }] } for the selected pages only.`;
+Return JSON only: { pages: [{ pageId, text, imagePrompt }] } for the selected pages only.`;
 
   const user = `Book title: ${input.title}
 Child: ${input.childName}
@@ -82,5 +82,10 @@ Revise only these page ids: ${selected.map((page) => page.id).join(", ")}.`;
 
   const result = revisedPagesSchema.parse(parsed);
   const allowed = new Set(input.selectedIds);
-  return result.pages.filter((page) => allowed.has(page.pageId));
+  const pages = result.pages.filter((page) => allowed.has(page.pageId));
+  try {
+    return await attachReaderLevelVariants(pages);
+  } catch {
+    return pages;
+  }
 }

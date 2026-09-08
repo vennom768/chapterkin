@@ -1,7 +1,10 @@
+import { after } from "next/server";
 import { notFound } from "next/navigation";
 import { StoryReader } from "@/components/story-reader";
 import { getStoryForUser } from "@/lib/queries/stories";
+import { resolvedReaderTexts } from "@/lib/reader-levels";
 import { requireUser } from "@/lib/session";
+import { ensureStoryReaderLevels } from "@/lib/story-reader-levels";
 
 export default async function StoryPage({
   params,
@@ -14,6 +17,10 @@ export default async function StoryPage({
   if (!result) {
     notFound();
   }
+  after(() => {
+    void ensureStoryReaderLevels(result.pages);
+  });
+  const pages = result.pages;
 
   return (
     <StoryReader
@@ -24,7 +31,15 @@ export default async function StoryPage({
       seriesId={result.story.seriesId}
       seriesTitle={result.series?.title}
       chapterNumber={result.story.chapterNumber}
-      pages={result.pages}
+      pages={pages.map((page) => ({
+        id: page.id,
+        pageIndex: page.pageIndex,
+        kind: page.kind,
+        text: page.text,
+        texts: resolvedReaderTexts(page),
+        imageStatus: page.imageStatus,
+        imagePath: page.imagePath,
+      }))}
     />
   );
 }

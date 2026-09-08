@@ -9,7 +9,7 @@ import {
   READER_LEVELS,
   READER_LEVEL_STORAGE_KEY,
   isReaderLevelId,
-  textForReaderLevel,
+  pickReaderText,
   type ReaderLevelId,
 } from "@/lib/reader-levels";
 import { cn } from "@/lib/utils";
@@ -19,7 +19,11 @@ type Page = {
   pageIndex: number;
   kind?: string | null;
   text: string;
-  textLevels?: string | null;
+  texts: {
+    early: string;
+    parent: string;
+    growing: string;
+  };
   imageStatus: string;
   imagePath: string | null;
 };
@@ -188,9 +192,16 @@ export function StoryReader({
         </div>
         <div className="px-5 py-6 sm:px-6 sm:py-8 md:px-10">
           {isCover ? (
-            <p className="font-serif text-2xl leading-8 text-navy sm:text-3xl">
-              {title}
-            </p>
+            <div className="space-y-4">
+              <p className="font-serif text-2xl leading-8 text-navy sm:text-3xl">
+                {title}
+              </p>
+              {storyPages[0] ? (
+                <p className="font-serif text-lg leading-8 text-foreground">
+                  {pickReaderText(storyPages[0].texts, readerLevel)}
+                </p>
+              ) : null}
+            </div>
           ) : (
             <p
               className={cn(
@@ -200,13 +211,13 @@ export function StoryReader({
                   : "text-lg sm:text-xl md:text-2xl",
               )}
             >
-              {textForReaderLevel(page, readerLevel)}
+              {pickReaderText(page.texts, readerLevel)}
             </p>
           )}
           <p className="mt-5 text-sm text-muted">
             {isCover
               ? "Cover"
-              : `Page ${storyPageNumber} of ${storyPages.length || pages.length}`}
+              : `${READER_LEVELS.find((level) => level.id === readerLevel)?.label} · Page ${storyPageNumber} of ${storyPages.length || pages.length}`}
           </p>
         </div>
       </article>

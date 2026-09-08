@@ -6,6 +6,7 @@ import { storyTextModel } from "@/lib/ai/models";
 import { getOpenAI } from "@/lib/ai/openai";
 import { isLocalStoryProvider, isMockStoryProvider } from "@/lib/ai/provider";
 import { formatAge, getAgeGuidance } from "@/lib/age";
+import { attachReaderLevelVariants } from "@/lib/ai/reader-variants";
 import { getIllustrationStyle } from "@/lib/illustration-styles";
 import type { StoryPerson } from "@/lib/ai/character-bible";
 import type { childProfile, storySeries } from "@/lib/db/schema";
@@ -56,10 +57,6 @@ Hard rules:
 - If a daily moment is provided, weave it in naturally as part of the adventure. Do not paste it as a recap.
 - Inclusive, warm, and respectful.
 - Each page is a speak-aloud chunk, not a wall of text.
-- Every page has three texts of the SAME events, names, and ending. Do not add or drop plot between them.
-- text is the parent read-aloud.
-- textEarly is learn-to-read: 1–2 short sentences, mostly 1–2 syllable words, same facts.
-- textGrowing is a richer wording of the same page for a child practicing harder words. Still bedtime-safe.
 - Write 8 to 10 interior story pages. Do not write a cover page. The app adds a titled cover separately.
 - Draw the child at their listed age on every page. Do not age them up or down in the story or in imagePrompt unless the parent's tonight note explicitly asks for a different age.
 - imagePrompt describes one interior scene from the SAME picture book: same child, same age, same clothes, same face, same art style. Include the child's exact age in every imagePrompt. No text in the image.
@@ -113,7 +110,8 @@ JSON fields:
 - seriesTitle: series name if this is or could become a series
 - synopsis: 2–4 sentences of what happened tonight
 - seriesSummary: compact memory for a future chapter
-- pages: array of { text, textEarly, textGrowing, imagePrompt }`;
+- pages: array of { text, imagePrompt }
+Write text for a parent to read aloud. Follow the age-band word count. Do not simplify it into a learn-to-read primer.`;
 
   let parsed: unknown;
   if (isLocalStoryProvider()) {
@@ -148,12 +146,16 @@ JSON fields:
         : parsed;
   const story = generatedStorySchema.parse(rawStory);
   const pageCount = story.pages.length;
-  if (pageCount < guidance.pages.min) {
-    // Accept slightly short books rather than failing the night.
-    return story;
+  const trimmed =
+    pageCount > guidance.pages.max
+      ? { ...story, pages: story.pages.slice(0, guidance.pages.max) }
+      : story;
+  try {
+    return {
+      ...trimmed,
+      pages: await attachReaderLevelVariants(trimmed.pages),
+    };
+  } catch {
+    return trimmed;
   }
-  if (pageCount > guidance.pages.max) {
-    return { ...story, pages: story.pages.slice(0, guidance.pages.max) };
-  }
-  return story;
 }
