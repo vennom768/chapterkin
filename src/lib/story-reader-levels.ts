@@ -23,7 +23,12 @@ export async function ensureStoryReaderLevels<
     return pages;
   }
 
-  let variants: Array<{ textEarly: string; textGrowing: string }>;
+  let variants: Array<{
+    textEarly1: string;
+    textEarly2: string;
+    textEarly3: string;
+    textGrowing: string;
+  }>;
   try {
     variants = await generateReaderLevelVariants(
       interiors.map((page) => page.text),
@@ -36,7 +41,9 @@ export async function ensureStoryReaderLevels<
     interiors.map(async (page, index) => {
       const levels = normalizeGeneratedPageLevels({
         text: page.text,
-        textEarly: variants[index]?.textEarly,
+        textEarly1: variants[index]?.textEarly1,
+        textEarly2: variants[index]?.textEarly2,
+        textEarly3: variants[index]?.textEarly3,
         textGrowing: variants[index]?.textGrowing,
       });
       page.textLevels = levels.textLevels;

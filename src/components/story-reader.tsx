@@ -5,12 +5,18 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
+  DEFAULT_EARLY_STEP,
   DEFAULT_READER_LEVEL,
-  READER_LEVELS,
+  EARLY_STEPS,
   READER_LEVEL_STORAGE_KEY,
-  isReaderLevelId,
+  READER_MODES,
+  coerceReaderLevelId,
+  isEarlyStepId,
   pickReaderText,
+  readerModeId,
+  type EarlyStepId,
   type ReaderLevelId,
+  type ReaderTexts,
 } from "@/lib/reader-levels";
 import { cn } from "@/lib/utils";
 
@@ -19,11 +25,7 @@ type Page = {
   pageIndex: number;
   kind?: string | null;
   text: string;
-  texts: {
-    early: string;
-    parent: string;
-    growing: string;
-  };
+  texts: ReaderTexts;
   imageStatus: string;
   imagePath: string | null;
 };
@@ -49,15 +51,20 @@ export function StoryReader({
 }) {
   const [index, setIndex] = useState(0);
   const [readerLevel, setReaderLevel] = useState<ReaderLevelId>(DEFAULT_READER_LEVEL);
+  const [earlyStep, setEarlyStep] = useState<EarlyStepId>(DEFAULT_EARLY_STEP);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [imageStatus, setImageStatus] = useState(
     Object.fromEntries(pages.map((page) => [page.id, page.imageStatus])),
   );
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(READER_LEVEL_STORAGE_KEY);
-    if (stored && isReaderLevelId(stored)) {
-      setReaderLevel(stored);
+    const stored = coerceReaderLevelId(
+      window.localStorage.getItem(READER_LEVEL_STORAGE_KEY),
+    );
+    if (!stored) return;
+    setReaderLevel(stored);
+    if (isEarlyStepId(stored)) {
+      setEarlyStep(stored);
     }
   }, []);
 
@@ -126,15 +133,16 @@ export function StoryReader({
         <div className="mx-auto mt-4 max-w-lg">
           <p className="mb-2 text-sm font-semibold text-navy">Who is reading?</p>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-            {READER_LEVELS.map((level) => {
-              const selected = readerLevel === level.id;
+            {READER_MODES.map((mode) => {
+              const selected = readerModeId(readerLevel) === mode.id;
               return (
                 <button
-                  key={level.id}
+                  key={mode.id}
                   type="button"
                   onClick={() => {
-                    setReaderLevel(level.id);
-                    window.localStorage.setItem(READER_LEVEL_STORAGE_KEY, level.id);
+                    const next = mode.id === "early" ? earlyStep : mode.id;
+                    setReaderLevel(next);
+                    window.localStorage.setItem(READER_LEVEL_STORAGE_KEY, next);
                   }}
                   className={cn(
                     "rounded-2xl border px-3 py-2.5 text-left transition-colors",
@@ -143,12 +151,46 @@ export function StoryReader({
                       : "border-border bg-white text-navy hover:bg-gold/15",
                   )}
                 >
-                  <span className="block text-sm font-semibold">{level.label}</span>
-                  <span className="mt-0.5 block text-xs text-muted">{level.blurb}</span>
+                  <span className="block text-sm font-semibold">{mode.label}</span>
+                  <span className="mt-0.5 block text-xs text-muted">{mode.blurb}</span>
                 </button>
               );
             })}
           </div>
+          {readerModeId(readerLevel) === "early" ? (
+            <div className="mt-3">
+              <p className="mb-1.5 text-xs font-semibold text-navy">
+                Learn-to-read step
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {EARLY_STEPS.map((step) => {
+                  const selected = readerLevel === step.id;
+                  return (
+                    <button
+                      key={step.id}
+                      type="button"
+                      onClick={() => {
+                        setEarlyStep(step.id);
+                        setReaderLevel(step.id);
+                        window.localStorage.setItem(READER_LEVEL_STORAGE_KEY, step.id);
+                      }}
+                      className={cn(
+                        "rounded-2xl border px-2 py-2 text-center transition-colors",
+                        selected
+                          ? "border-accent bg-gold/30 text-navy"
+                          : "border-border bg-white text-navy hover:bg-gold/15",
+                      )}
+                    >
+                      <span className="block text-base font-semibold">{step.label}</span>
+                      <span className="mt-0.5 block text-[11px] leading-4 text-muted">
+                        {step.blurb}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
         </div>
         <Link
           href={`/stories/${storyId}/edit`}
@@ -192,23 +234,18 @@ export function StoryReader({
         </div>
         <div className="px-5 py-6 sm:px-6 sm:py-8 md:px-10">
           {isCover ? (
-            <div className="space-y-4">
-              <p className="font-serif text-2xl leading-8 text-navy sm:text-3xl">
-                {title}
-              </p>
-              {storyPages[0] ? (
-                <p className="font-serif text-lg leading-8 text-foreground">
-                  {pickReaderText(storyPages[0].texts, readerLevel)}
-                </p>
-              ) : null}
-            </div>
+            <p className="font-serif text-2xl leading-8 text-navy sm:text-3xl">
+              {title}
+            </p>
           ) : (
             <p
               className={cn(
                 "font-serif leading-8 text-foreground md:leading-9",
-                readerLevel === "early"
-                  ? "text-xl sm:text-2xl md:text-3xl"
-                  : "text-lg sm:text-xl md:text-2xl",
+                readerLevel === "early1"
+                  ? "text-2xl sm:text-3xl"
+                  : readerLevel === "early2"
+                    ? "text-xl sm:text-2xl md:text-3xl"
+                    : "text-lg sm:text-xl md:text-2xl",
               )}
             >
               {pickReaderText(page.texts, readerLevel)}
@@ -217,7 +254,11 @@ export function StoryReader({
           <p className="mt-5 text-sm text-muted">
             {isCover
               ? "Cover"
-              : `${READER_LEVELS.find((level) => level.id === readerLevel)?.label} · Page ${storyPageNumber} of ${storyPages.length || pages.length}`}
+              : `${
+                  readerModeId(readerLevel) === "early"
+                    ? `Learn to read · ${EARLY_STEPS.find((step) => step.id === readerLevel)?.step}`
+                    : READER_MODES.find((mode) => mode.id === readerLevel)?.label
+                } · Page ${storyPageNumber} of ${storyPages.length || pages.length}`}
           </p>
         </div>
       </article>
