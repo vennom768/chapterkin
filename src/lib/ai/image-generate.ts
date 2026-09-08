@@ -67,6 +67,7 @@ export async function generateImagePng(
       }
     } catch (error) {
       lastError = error;
+      console.error("Image generate failed", model, error);
     }
   }
 

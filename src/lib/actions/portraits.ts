@@ -15,7 +15,7 @@ import {
 } from "@/lib/portraits";
 import { getChildForUser } from "@/lib/queries/children";
 import { listPortraitsForChild } from "@/lib/queries/portraits";
-import { requireUser } from "@/lib/session";
+import { getCurrentUser, requireUser } from "@/lib/session";
 import { getStripe, isStripeConfigured } from "@/lib/stripe";
 import { createId } from "@/lib/utils";
 
@@ -33,8 +33,18 @@ function revalidateChild(childId: string) {
   revalidatePath("/home");
 }
 
+function actionError(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+  return fallback;
+}
+
 export async function generateChildPortrait(formData: FormData): Promise<PortraitActionResult> {
-  const user = await requireUser();
+  const user = await getCurrentUser();
+  if (!user) {
+    return { ok: false, error: "Sign in to draw your child.", redirectTo: "/sign-in" };
+  }
   const childId = String(formData.get("childId") ?? "");
   const note = String(formData.get("note") ?? "").trim() || null;
   const child = await getChildForUser(user.id, childId);
@@ -43,7 +53,7 @@ export async function generateChildPortrait(formData: FormData): Promise<Portrai
   }
 
   const existing = await listPortraitsForChild(user.id, childId);
-  if (portraitsRemaining(existing.length, child.portraitPacks) <= 0) {
+  if (portraitsRemaining(existing.length, child.portraitPacks ?? 0) <= 0) {
     return {
       ok: false,
       error: "Those three drawings are used. Buy three more to keep iterating.",
@@ -58,13 +68,13 @@ export async function generateChildPortrait(formData: FormData): Promise<Portrai
     if (photo.size > PHOTO_MAX_BYTES) {
       return { ok: false, error: "That photo is too large. Use a picture under 6 MB." };
     }
-    if (!PHOTO_TYPES.has(photo.type)) {
+    if (photo.type && !PHOTO_TYPES.has(photo.type)) {
       return { ok: false, error: "Use a JPG, PNG, or WebP photo." };
     }
     photoRef = {
       buffer: Buffer.from(await photo.arrayBuffer()),
-      mime: photo.type,
-      filename: "parent-photo-temp",
+      mime: photo.type || "image/jpeg",
+      filename: "parent-photo-temp.jpg",
     };
   }
 
@@ -98,8 +108,12 @@ export async function generateChildPortrait(formData: FormData): Promise<Portrai
     );
     revalidateChild(childId);
     return { ok: true };
-  } finally {
-    photoRef = undefined;
+  } catch (error) {
+    console.error("generateChildPortrait failed", error);
+    return {
+      ok: false,
+      error: actionError(error, "Could not draw this picture. Try again in a moment."),
+    };
   }
 }
 

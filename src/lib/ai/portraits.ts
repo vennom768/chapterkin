@@ -24,9 +24,9 @@ export function childPortraitPrompt(
     ? "Use the attached parent photo only as a one-time likeness reference. Draw a children's picture-book portrait, not a photograph. Do not reproduce the photo. Discard the photo after this drawing."
     : "Draw from the written look only. No photograph was provided.";
   return [
-    `Square children's picture-book portrait of ${name}, who is ${age}.`,
-    look ? `Look: ${look}.` : "",
-    "Soft watercolor storybook art, cream background, facing the camera, kind expression, not photorealistic, no text, no watermark.",
+    `Square children's picture-book illustration of the story's main character, ${name}. They are ${age}.`,
+    look ? `Keep this exact look: ${look}.` : "",
+    "Soft watercolor bedtime picture-book art, cream background, facing forward, kind expression. Not a photograph. No text, no watermark, no caption.",
     photoRule,
     note ? `Parent revision note: ${note}` : "",
   ]

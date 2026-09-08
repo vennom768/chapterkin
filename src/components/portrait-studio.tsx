@@ -59,19 +59,33 @@ export function PortraitStudio({
 
       <form
         className="space-y-4"
-        action={async (formData) => {
+        onSubmit={async (event) => {
+          event.preventDefault();
           setPending(true);
           setError(null);
+          const formData = new FormData(event.currentTarget);
           formData.set("childId", childId);
-          const result = await generateChildPortrait(formData);
-          if (!result.ok) {
-            setError(result.error);
-            setPending(false);
-            return;
+          const photo = formData.get("photo");
+          if (photo instanceof File && photo.size === 0) {
+            formData.delete("photo");
           }
-          setPending(false);
+          try {
+            const result = await generateChildPortrait(formData);
+            if (!result.ok) {
+              setError(result.error);
+              if (result.redirectTo) {
+                window.location.href = result.redirectTo;
+              }
+              return;
+            }
+          } catch (err) {
+            setError(err instanceof Error ? err.message : "Could not draw this picture.");
+          } finally {
+            setPending(false);
+          }
         }}
       >
+        <input type="hidden" name="childId" value={childId} />
         <div>
           <Label htmlFor="photo">Optional photo (used once, never stored)</Label>
           <input

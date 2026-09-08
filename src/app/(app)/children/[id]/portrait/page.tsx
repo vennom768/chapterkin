@@ -6,6 +6,8 @@ import { getChildForUser } from "@/lib/queries/children";
 import { listPortraitsForChild } from "@/lib/queries/portraits";
 import { requireFamily } from "@/lib/session";
 
+export const maxDuration = 120;
+
 export default async function ChildPortraitPage({
   params,
 }: {
