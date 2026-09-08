@@ -12,7 +12,7 @@ export default function Index() {
       </View>
     );
   }
-  if (!me) return <Redirect href="/sign-in" />;
+  if (!me) return <Redirect href="/welcome" />;
   if (me.needsOnboarding) return <Redirect href="/onboarding" />;
   return <Redirect href="/tonight" />;
 }

@@ -17,6 +17,11 @@ export const childDraftSchema = z.object({
     .max(400),
   callsMom: z.string().max(40).optional().nullable(),
   callsDad: z.string().max(40).optional().nullable(),
+  hair: z.string().max(160).optional().nullable(),
+  eyes: z.string().max(120).optional().nullable(),
+  skin: z.string().max(120).optional().nullable(),
+  usualClothes: z.string().max(240).optional().nullable(),
+  notes: z.string().max(600).optional().nullable(),
 });
 
 export const householdDraftSchema = z.object({
@@ -71,6 +76,11 @@ export async function createFamilyOnboarding(userId: string, input: OnboardingIn
       favoriteThings: child.favoriteThings.trim(),
       callsMom: child.callsMom ?? null,
       callsDad: child.callsDad ?? null,
+      hair: child.hair?.trim() || null,
+      eyes: child.eyes?.trim() || null,
+      skin: child.skin?.trim() || null,
+      usualClothes: child.usualClothes?.trim() || null,
+      notes: child.notes?.trim() || null,
       createdAt: now,
       updatedAt: now,
     })),

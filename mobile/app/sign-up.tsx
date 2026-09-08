@@ -24,8 +24,8 @@ export default function SignUpScreen() {
         <Screen>
           <Title>Create a family account</Title>
           <Text style={{ color: colors.muted, fontSize: 16 }}>
-            Parents sign in. Add the kids next, then write tonight&apos;s story
-            after a plan is on the account.
+            Parents sign in. Next you will add the kids, then open chapterkin.com
+            with this same email to pick a plan.
           </Text>
           <Field label="Your name" value={name} onChangeText={setName} />
           <Field
@@ -65,6 +65,9 @@ export default function SignUpScreen() {
           />
           <Link href="/sign-in" style={{ color: colors.navy, fontWeight: "700" }}>
             I already have an account
+          </Link>
+          <Link href="/welcome" style={{ color: colors.muted, fontWeight: "700" }}>
+            Back
           </Link>
         </Screen>
       </ScrollView>

@@ -65,6 +65,9 @@ export default function SignInScreen() {
           <Link href="/sign-up" style={{ color: colors.navy, fontWeight: "700" }}>
             Create a family account
           </Link>
+          <Link href="/welcome" style={{ color: colors.muted, fontWeight: "700" }}>
+            Back
+          </Link>
         </Screen>
       </ScrollView>
     </KeyboardAvoidingView>

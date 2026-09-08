@@ -51,6 +51,9 @@ export default function ForgotPasswordScreen() {
       <Link href="/sign-in" style={{ color: colors.navy, fontWeight: "700" }}>
         Back to sign in
       </Link>
+      <Link href="/welcome" style={{ color: colors.muted, fontWeight: "700" }}>
+        Back to welcome
+      </Link>
     </Screen>
   );
 }

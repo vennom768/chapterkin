@@ -13,7 +13,7 @@ export default function AppLayout() {
       </View>
     );
   }
-  if (!me) return <Redirect href="/sign-in" />;
+  if (!me) return <Redirect href="/welcome" />;
   if (me.needsOnboarding) return <Redirect href="/onboarding" />;
   return (
     <AppChrome>

@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
@@ -163,6 +163,7 @@ export default function PortraitScreen() {
           pending={pending}
           onPress={() => generate()}
         />
+        <Button label="Done" variant="secondary" onPress={() => router.replace("/tonight")} />
       </Screen>
     </ScrollView>
   );

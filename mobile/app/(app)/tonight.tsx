@@ -1,8 +1,10 @@
 import { Link } from "expo-router";
 import { Pressable, ScrollView, Text, View } from "react-native";
+import { PlanCard } from "@/src/components/plan-card";
 import { Card, Muted, Screen, Title } from "@/src/components/ui";
 import { useSession } from "@/src/lib/session";
 import { colors } from "@/src/lib/theme";
+import { openWebsite } from "@/src/lib/website";
 
 export default function TonightScreen() {
   const { me } = useSession();
@@ -19,6 +21,7 @@ export default function TonightScreen() {
         <Muted>{me.family?.name}</Muted>
         <Title>Who is tonight&apos;s story for?</Title>
         <Text style={{ color: colors.navy, fontWeight: "700" }}>{quota}</Text>
+        <PlanCard />
         {me.children.map((child) => (
           <Card key={child.id}>
             <Muted>
@@ -29,11 +32,17 @@ export default function TonightScreen() {
               {child.calledBy || child.name}
             </Text>
             <View style={{ gap: 8, marginTop: 8 }}>
+              {me.usage.canGenerate ? (
               <Link href={`/stories/new?childId=${child.id}`} asChild>
                 <Pressable style={styles.primary}>
                   <Text style={styles.primaryLabel}>Write tonight&apos;s story</Text>
                 </Pressable>
               </Link>
+              ) : (
+                <Pressable style={styles.primary} onPress={() => openWebsite("/pricing")}>
+                  <Text style={styles.primaryLabel}>Choose a plan to write</Text>
+                </Pressable>
+              )}
               <Link href={`/children/${child.id}/portrait`} asChild>
                 <Pressable style={styles.secondary}>
                   <Text style={styles.secondaryLabel}>

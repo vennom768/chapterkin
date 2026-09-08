@@ -1,6 +1,8 @@
 import { Link, Slot, usePathname } from "expo-router";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ChromeContext } from "@/src/components/chrome-context";
+import { bottomSafeInset, topSafeInset } from "@/src/lib/safe-area";
 import { colors, TABLET_MIN_WIDTH } from "@/src/lib/theme";
 
 const links = [
@@ -15,23 +17,44 @@ export function AppChrome({ children }: { children?: React.ReactNode }) {
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
   const tablet = width >= TABLET_MIN_WIDTH;
-  const hideTabs =
+  const reading =
     pathname.startsWith("/stories/") && pathname !== "/stories/new";
 
   return (
-    <View style={[styles.root, { paddingTop: insets.top }]}>
-      <View style={[styles.header, { paddingHorizontal: tablet ? 24 : 16 }]}>
-        <Text style={styles.brand}>ChapterKin</Text>
-      </View>
-      <View style={styles.body}>
-        {tablet && !hideTabs ? (
-          <View style={styles.sidebar}>
+    <ChromeContext.Provider value>
+      <View style={[styles.root, { paddingTop: reading ? 0 : topSafeInset(insets) }]}>
+        {reading ? null : (
+          <View style={[styles.header, { paddingHorizontal: tablet ? 24 : 16 }]}>
+            <Text style={styles.brand}>ChapterKin</Text>
+          </View>
+        )}
+        <View style={styles.body}>
+          {tablet && !reading ? (
+            <View style={styles.sidebar}>
+              {links.map((link) => {
+                const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
+                return (
+                  <Link key={link.href} href={link.href} asChild>
+                    <Pressable style={[styles.sideLink, active && styles.sideLinkActive]}>
+                      <Text style={[styles.sideLabel, active && styles.sideLabelActive]}>
+                        {link.label}
+                      </Text>
+                    </Pressable>
+                  </Link>
+                );
+              })}
+            </View>
+          ) : null}
+          <View style={styles.content}>{children ?? <Slot />}</View>
+        </View>
+        {!tablet && !reading ? (
+          <View style={[styles.tabs, { paddingBottom: Math.max(bottomSafeInset(insets), 8) }]}>
             {links.map((link) => {
               const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
               return (
                 <Link key={link.href} href={link.href} asChild>
-                  <Pressable style={[styles.sideLink, active && styles.sideLinkActive]}>
-                    <Text style={[styles.sideLabel, active && styles.sideLabelActive]}>
+                  <Pressable style={styles.tab}>
+                    <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>
                       {link.label}
                     </Text>
                   </Pressable>
@@ -40,25 +63,8 @@ export function AppChrome({ children }: { children?: React.ReactNode }) {
             })}
           </View>
         ) : null}
-        <View style={styles.content}>{children ?? <Slot />}</View>
       </View>
-      {!tablet && !hideTabs ? (
-        <View style={[styles.tabs, { paddingBottom: Math.max(insets.bottom, 8) }]}>
-          {links.map((link) => {
-            const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
-            return (
-              <Link key={link.href} href={link.href} asChild>
-                <Pressable style={styles.tab}>
-                  <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>
-                    {link.label}
-                  </Text>
-                </Pressable>
-              </Link>
-            );
-          })}
-        </View>
-      ) : null}
-    </View>
+    </ChromeContext.Provider>
   );
 }
 
@@ -68,7 +74,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
-    paddingVertical: 12,
+    paddingTop: 10,
+    paddingBottom: 14,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },

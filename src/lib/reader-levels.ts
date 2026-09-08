@@ -2,7 +2,7 @@ export const READER_MODES = [
   {
     id: "early",
     label: "Learn to read",
-    blurb: "First words up to the parent read-aloud.",
+    blurb: "First words, then a short page, then the parent read-aloud.",
   },
   {
     id: "parent",
@@ -33,7 +33,7 @@ export const EARLY_STEPS = [
     id: "early3",
     step: 3,
     label: "3",
-    blurb: "Almost parent.",
+    blurb: "A few simple sentences.",
   },
 ] as const;
 
@@ -137,20 +137,31 @@ export function readerLevelsAreDistinct(
 ) {
   const early1 = levels.early1?.trim() ?? "";
   const early2 = levels.early2?.trim() ?? "";
+  const early3 = levels.early3?.trim() ?? "";
   const growing = levels.growing?.trim() ?? "";
-  if (!early1 || !early2 || !growing) return false;
+  if (!early1 || !early2 || !early3 || !growing) return false;
   const parentNorm = normalizeForCompare(parent);
   const early1Norm = normalizeForCompare(early1);
   const early2Norm = normalizeForCompare(early2);
+  const early3Norm = normalizeForCompare(early3);
   const growingNorm = normalizeForCompare(growing);
   return (
     early1Norm !== parentNorm &&
     early2Norm !== parentNorm &&
+    early3Norm !== parentNorm &&
     growingNorm !== parentNorm &&
     early1Norm !== early2Norm &&
+    early1Norm !== early3Norm &&
+    early2Norm !== early3Norm &&
     early1Norm !== growingNorm &&
-    early2Norm !== growingNorm
+    early2Norm !== growingNorm &&
+    early3Norm !== growingNorm
   );
+}
+
+function firstSentences(text: string, count: number) {
+  const parts = text.match(/[^.!?]+[.!?]+(?:\s+|$)|[^.!?]+$/g) ?? [text];
+  return parts.slice(0, count).join("").replace(/\s+/g, " ").trim();
 }
 
 export function fallbackReaderLevelVariants(text: string) {
@@ -166,10 +177,31 @@ export function fallbackReaderLevelVariants(text: string) {
       ? `${early2Words} They see it`
       : early2Words || `${tokens.slice(0, 4).join(" ")} they go`,
   );
+  const early3Source = firstSentences(words, 2);
+  const early3Tokens = early3Source
+    .replace(/[.,!?]/g, "")
+    .split(/\s+/)
+    .filter(Boolean);
+  let early3 = endSentence(early3Tokens.slice(0, 16).join(" ") || early2);
+  if (
+    normalizeForCompare(early3) === normalizeForCompare(words) ||
+    normalizeForCompare(early3) === normalizeForCompare(early2)
+  ) {
+    early3 = endSentence(
+      tokens.slice(0, Math.min(14, Math.max(tokens.length - 2, 9))).join(" ") ||
+        `${early2.replace(/[.!?]$/, "")} Then they keep going`,
+    );
+  }
+  if (
+    normalizeForCompare(early3) === normalizeForCompare(words) ||
+    normalizeForCompare(early3) === normalizeForCompare(early2)
+  ) {
+    early3 = endSentence(`${early2.replace(/[.!?]$/, "")} Then they keep going`);
+  }
   return {
     textEarly1: early1,
     textEarly2: early2,
-    textEarly3: words || early2,
+    textEarly3: early3,
     textGrowing: `${words} After that, the same people stayed close, the same quiet path remained, and sleep came more slowly and more surely than before.`,
     textEarly: early1,
   };
@@ -187,11 +219,7 @@ export function textForReaderLevel(
     level === "growing"
       ? stored.growing?.trim()
       : stored[level]?.trim();
-  if (
-    storedText &&
-    (level === "early3" ||
-      normalizeForCompare(storedText) !== normalizeForCompare(page.text))
-  ) {
+  if (storedText && normalizeForCompare(storedText) !== normalizeForCompare(page.text)) {
     return storedText;
   }
   const fallback = fallbackReaderLevelVariants(page.text);
@@ -218,11 +246,7 @@ export function resolvedReaderTexts(page: {
 export function pickReaderText(texts: ReaderTexts, level: ReaderLevelId) {
   if (level === "parent") return texts.parent;
   const chosen = texts[level]?.trim();
-  if (
-    chosen &&
-    (level === "early3" ||
-      normalizeForCompare(chosen) !== normalizeForCompare(texts.parent))
-  ) {
+  if (chosen && normalizeForCompare(chosen) !== normalizeForCompare(texts.parent)) {
     return chosen;
   }
   const fallback = fallbackReaderLevelVariants(texts.parent);

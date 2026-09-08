@@ -56,10 +56,10 @@ export async function generateReaderLevelVariants(pages: string[]) {
 Keep the same people, names, facts, and ending. Do not add or drop events.
 textEarly1 is for a first-time reader: 1 very short sentence, 3-6 easy words, mostly 1 syllable.
 textEarly2 is a small step up: 1-2 short sentences, still easy words, clearly longer than textEarly1.
-textEarly3 is almost the parent read-aloud: same facts and nearly the same length, only a little simpler if needed. It may stay very close to the parent page.
+textEarly3 is a child almost reading the full page: 2-4 simple sentences, same facts, shorter words, clearly shorter and simpler than the parent page. It must not copy the parent page.
 textGrowing is for practice: longer sentences, richer verbs and feelings, at least one extra clause.
 textGrowing must be clearly longer and more complex than the parent page.
-textEarly1 and textEarly2 must not copy the parent page or each other.
+textEarly1, textEarly2, and textEarly3 must not copy the parent page or each other.
 Return JSON only: { pages: [{ textEarly1, textEarly2, textEarly3, textGrowing }] } in the same order.`;
 
   const user = `Parent pages:\n${pages
@@ -95,7 +95,14 @@ Return JSON only: { pages: [{ textEarly1, textEarly2, textEarly3, textGrowing }]
     const textEarly2 = firstText(row.textEarly2, row.text_early_2, row.early2);
     const textEarly3 = firstText(row.textEarly3, row.text_early_3, row.early3);
     const textGrowing = firstText(row.textGrowing, row.text_growing, row.growing);
-    if (!readerLevelsAreDistinct(text, { early1: textEarly1, early2: textEarly2, growing: textGrowing })) {
+    if (
+      !readerLevelsAreDistinct(text, {
+        early1: textEarly1,
+        early2: textEarly2,
+        early3: textEarly3,
+        growing: textGrowing,
+      })
+    ) {
       return fallback;
     }
     return {

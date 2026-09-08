@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
+import { PlanCard } from "@/src/components/plan-card";
 import { Button, ErrorText, Field, Muted, Screen, Title } from "@/src/components/ui";
 import { api } from "@/src/lib/api";
 import { useSession } from "@/src/lib/session";
@@ -49,6 +50,7 @@ export default function NewStoryScreen() {
       <Screen>
         <Title>A story for {child.calledBy || child.name}</Title>
         <Muted>{quota}</Muted>
+        <PlanCard />
         <View style={{ flexDirection: "row", gap: 8 }}>
           {(["standalone", "series"] as const).map((value) => (
             <Pressable

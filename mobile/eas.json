@@ -19,6 +19,27 @@
     }
   },
   "submit": {
-    "production": {}
+    "preview": {
+      "ios": {
+        "appleId": "mcharris.patrick@gmail.com",
+        "ascAppId": "6809887484",
+        "appleTeamId": "5CMQWAFYD7",
+        "sku": "chapterkin",
+        "appName": "ChapterKin",
+        "language": "en-US",
+        "companyName": "Patrick McHarris"
+      }
+    },
+    "production": {
+      "ios": {
+        "appleId": "mcharris.patrick@gmail.com",
+        "ascAppId": "6809887484",
+        "appleTeamId": "5CMQWAFYD7",
+        "sku": "chapterkin",
+        "appName": "ChapterKin",
+        "language": "en-US",
+        "companyName": "Patrick McHarris"
+      }
+    }
   }
 }

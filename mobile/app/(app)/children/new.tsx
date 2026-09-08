@@ -19,7 +19,7 @@ export default function NewChildScreen() {
         <ChildFields value={draft} onChange={setDraft} />
         <ErrorText>{error}</ErrorText>
         <Button
-          label="Save child"
+          label="Save and draw three pictures"
           pending={pending}
           onPress={async () => {
             setPending(true);

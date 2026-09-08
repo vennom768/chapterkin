@@ -1,5 +1,6 @@
 import { Pressable, Text, View } from "react-native";
-import { Field } from "@/src/components/ui";
+import { LookBuilder } from "@/src/components/look-builder";
+import { Field, Muted } from "@/src/components/ui";
 import { colors } from "@/src/lib/theme";
 
 export type ChildDraft = {
@@ -64,13 +65,16 @@ export function ChildFields({
 }) {
   const set = (patch: Partial<ChildDraft>) => onChange({ ...value, ...patch });
   return (
-    <View style={{ gap: 12 }}>
+    <View style={{ gap: 16 }}>
       <Field label="Name" value={value.name} onChangeText={(name: string) => set({ name })} />
-      <Field
-        label="What you call them"
-        value={value.calledBy}
-        onChangeText={(calledBy: string) => set({ calledBy })}
-      />
+      <View style={{ gap: 6 }}>
+        <Field
+          label="What you call them"
+          value={value.calledBy}
+          onChangeText={(calledBy: string) => set({ calledBy })}
+        />
+        <Muted>Stories will use this name.</Muted>
+      </View>
       <Field
         label="Age (years)"
         keyboardType="number-pad"
@@ -107,31 +111,48 @@ export function ChildFields({
           </Pressable>
         ))}
       </View>
-      <Field label="Hair" value={value.hair} onChangeText={(hair: string) => set({ hair })} />
-      <Field label="Eyes" value={value.eyes} onChangeText={(eyes: string) => set({ eyes })} />
-      <Field label="Skin" value={value.skin} onChangeText={(skin: string) => set({ skin })} />
+      <View style={{ gap: 8 }}>
+        <Text style={{ color: colors.navy, fontSize: 20, fontWeight: "700" }}>What they call their parents</Text>
+        <Muted>Mommy, Mom, Mama, Daddy, Dad, Papa — whatever they actually say.</Muted>
+      </View>
       <Field
-        label="Usual clothes"
-        value={value.usualClothes}
-        onChangeText={(usualClothes: string) => set({ usualClothes })}
-      />
-      <Field
-        label="Favorite things"
-        multiline
-        value={value.favoriteThings}
-        onChangeText={(favoriteThings: string) => set({ favoriteThings })}
-      />
-      <Field
-        label="What they call mom"
+        label="Mom"
         value={value.callsMom}
         onChangeText={(callsMom: string) => set({ callsMom })}
       />
       <Field
-        label="What they call dad"
+        label="Dad"
         value={value.callsDad}
         onChangeText={(callsDad: string) => set({ callsDad })}
       />
-      <Field label="Notes" multiline value={value.notes} onChangeText={(notes: string) => set({ notes })} />
+      <Field
+        label="A little about them"
+        multiline
+        value={value.favoriteThings}
+        onChangeText={(favoriteThings: string) => set({ favoriteThings })}
+      />
+      <View style={{ gap: 8 }}>
+        <Text style={{ color: colors.navy, fontSize: 20, fontWeight: "700" }}>Build how they look</Text>
+        <Muted>
+          Tap face, hair, eyes, and clothes. After you save, you can add a photo and we draw three pictures to pick
+          from.
+        </Muted>
+      </View>
+      <LookBuilder
+        hair={value.hair}
+        eyes={value.eyes}
+        skin={value.skin}
+        usualClothes={value.usualClothes}
+        onChange={(look) =>
+          set({
+            hair: look.hair,
+            eyes: look.eyes,
+            skin: look.skin,
+            usualClothes: look.usualClothes,
+          })
+        }
+      />
+      <Field label="Anything else" multiline value={value.notes} onChangeText={(notes: string) => set({ notes })} />
     </View>
   );
 }

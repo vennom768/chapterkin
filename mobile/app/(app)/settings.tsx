@@ -1,17 +1,15 @@
 import { router } from "expo-router";
-import { useState } from "react";
 import { Alert, ScrollView, Text } from "react-native";
-import { Button, Card, ErrorText, Field, Muted, Screen, Title } from "@/src/components/ui";
+import { PlanCard } from "@/src/components/plan-card";
+import { Button, Card, Muted, Screen, Title } from "@/src/components/ui";
 import { api } from "@/src/lib/api";
 import { authClient } from "@/src/lib/auth";
 import { useSession } from "@/src/lib/session";
 import { colors } from "@/src/lib/theme";
+import { openWebsite } from "@/src/lib/website";
 
 export default function SettingsScreen() {
-  const { me, refresh, signOut } = useSession();
-  const [code, setCode] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
+  const { me, signOut } = useSession();
 
   return (
     <ScrollView>
@@ -29,35 +27,16 @@ export default function SettingsScreen() {
               : "This account does not have a plan yet."}
           </Text>
         </Card>
-        <Field label="Promo code" value={code} onChangeText={setCode} autoCapitalize="characters" />
-        <ErrorText>{error}</ErrorText>
-        <Button
-          label="Apply promo"
-          pending={pending}
-          variant="secondary"
-          onPress={async () => {
-            setPending(true);
-            setError(null);
-            try {
-              await api("/api/mobile/promo", {
-                method: "POST",
-                body: JSON.stringify({ code }),
-              });
-              await refresh();
-              setCode("");
-              setPending(false);
-            } catch (next) {
-              setError(next instanceof Error ? next.message : "Could not apply that code.");
-              setPending(false);
-            }
-          }}
-        />
+        <PlanCard />
+        {me?.usage.paid ? (
+          <Button label="Manage plan on chapterkin.com" variant="secondary" onPress={() => openWebsite("/billing")} />
+        ) : null}
         <Button
           label="Sign out"
           variant="secondary"
           onPress={async () => {
             await signOut();
-            router.replace("/sign-in");
+            router.replace("/welcome");
           }}
         />
         <Button
@@ -79,7 +58,7 @@ export default function SettingsScreen() {
                       await authClient.deleteUser();
                     }
                     await signOut();
-                    router.replace("/sign-in");
+                    router.replace("/welcome");
                   },
                 },
               ],

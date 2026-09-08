@@ -1,40 +1,56 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { ScrollView } from "react-native";
-import { Button, ErrorText, Field, Screen, Title } from "@/src/components/ui";
+import { ScrollView, Text, View } from "react-native";
+import { ChildFields, childPayload, emptyChildDraft, type ChildDraft } from "@/src/components/child-fields";
+import { HouseholdFields, householdPayload, type HouseholdDraft } from "@/src/components/household-fields";
+import { Button, ErrorText, Field, Muted, Screen, Title } from "@/src/components/ui";
 import { api } from "@/src/lib/api";
 import { useSession } from "@/src/lib/session";
+import { colors } from "@/src/lib/theme";
 
 export default function OnboardingScreen() {
   const { refresh } = useSession();
   const [familyName, setFamilyName] = useState("");
-  const [childName, setChildName] = useState("");
-  const [calledBy, setCalledBy] = useState("");
-  const [age, setAge] = useState("5");
-  const [sex, setSex] = useState<"boy" | "girl">("girl");
-  const [favoriteThings, setFavoriteThings] = useState("");
+  const [notes, setNotes] = useState("");
+  const [kids, setKids] = useState<ChildDraft[]>([emptyChildDraft()]);
+  const [household, setHousehold] = useState<HouseholdDraft[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
   return (
-    <ScrollView style={{ flex: 1 }}>
+    <ScrollView style={{ flex: 1, backgroundColor: colors.background }}>
       <Screen>
         <Title>Add the family</Title>
+        <Muted>Name the household, then add kids the same way you would on the website.</Muted>
         <Field label="Family name" value={familyName} onChangeText={setFamilyName} />
-        <Field label="First child's name" value={childName} onChangeText={setChildName} />
-        <Field label="What you call them" value={calledBy} onChangeText={setCalledBy} />
-        <Field label="Age" keyboardType="number-pad" value={age} onChangeText={setAge} />
+        <Field label="Anything about your household" multiline value={notes} onChangeText={setNotes} />
+        {kids.map((kid, index) => (
+          <View key={index} style={{ gap: 12, marginTop: 8 }}>
+            <Text style={{ color: colors.navy, fontSize: 22, fontWeight: "700" }}>
+              {index === 0 ? "First child" : `Child ${index + 1}`}
+            </Text>
+            <ChildFields
+              value={kid}
+              onChange={(next) =>
+                setKids((current) => current.map((item, itemIndex) => (itemIndex === index ? next : item)))
+              }
+            />
+            {kids.length > 1 ? (
+              <Button
+                label="Remove this child"
+                variant="secondary"
+                onPress={() => setKids((current) => current.filter((_, itemIndex) => itemIndex !== index))}
+              />
+            ) : null}
+          </View>
+        ))}
         <Button
-          label={sex === "girl" ? "Girl" : "Boy"}
+          label="Add another child"
           variant="secondary"
-          onPress={() => setSex(sex === "girl" ? "boy" : "girl")}
+          onPress={() => setKids((current) => [...current, emptyChildDraft()])}
         />
-        <Field
-          label="Favorite things"
-          multiline
-          value={favoriteThings}
-          onChangeText={setFavoriteThings}
-        />
+        <Text style={{ color: colors.navy, fontSize: 22, fontWeight: "700" }}>Parents, grandparents, pets</Text>
+        <HouseholdFields value={household} onChange={setHousehold} />
         <ErrorText>{error}</ErrorText>
         <Button
           label="Save family"
@@ -47,16 +63,9 @@ export default function OnboardingScreen() {
                 method: "POST",
                 body: JSON.stringify({
                   familyName,
-                  children: [
-                    {
-                      name: childName,
-                      calledBy: calledBy || childName,
-                      age: Number(age),
-                      sex,
-                      favoriteThings,
-                    },
-                  ],
-                  household: [],
+                  notes,
+                  children: kids.map(childPayload),
+                  household: householdPayload(household),
                 }),
               });
               await refresh();

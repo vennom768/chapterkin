@@ -8,6 +8,9 @@ import {
   type TextInputProps,
   type ViewStyle,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useInAppChrome } from "@/src/components/chrome-context";
+import { bottomSafeInset, topSafeInset } from "@/src/lib/safe-area";
 import { colors } from "@/src/lib/theme";
 
 export function Screen({
@@ -17,7 +20,22 @@ export function Screen({
   children: React.ReactNode;
   style?: ViewStyle;
 }) {
-  return <View style={[styles.screen, style]}>{children}</View>;
+  const insets = useSafeAreaInsets();
+  const inChrome = useInAppChrome();
+  return (
+    <View
+      style={[
+        styles.screen,
+        {
+          paddingTop: inChrome ? 16 : topSafeInset(insets) + 20,
+          paddingBottom: inChrome ? 24 : bottomSafeInset(insets) + 20,
+        },
+        style,
+      ]}
+    >
+      {children}
+    </View>
+  );
 }
 
 export function Title({ children }: { children: React.ReactNode }) {
@@ -98,9 +116,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
     paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 28,
-    gap: 12,
+    gap: 14,
   },
   title: {
     fontSize: 32,
