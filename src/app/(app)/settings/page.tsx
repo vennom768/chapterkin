@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ChangePasswordForm,
+  DeleteAccountForm,
   UpdateNameForm,
 } from "@/components/account-forms";
 import { SignOutButton } from "@/components/sign-out-button";
@@ -80,6 +81,10 @@ export default async function SettingsPage() {
           Changing it signs out other devices.
         </p>
         <ChangePasswordForm />
+      </Card>
+      <Card>
+        <h2 className="mb-4 font-serif text-2xl text-navy">Delete account</h2>
+        <DeleteAccountForm />
       </Card>
     </div>
   );

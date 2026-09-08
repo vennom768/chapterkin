@@ -1,3 +1,4 @@
+import { expo } from "@better-auth/expo";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
@@ -44,6 +45,9 @@ export const auth = betterAuth({
     changeEmail: {
       enabled: true,
     },
+    deleteUser: {
+      enabled: true,
+    },
   },
   session: {
     expiresIn: 60 * 60 * 24 * 30,
@@ -56,6 +60,7 @@ export const auth = betterAuth({
   },
   trustedOrigins: getTrustedOrigins(),
   plugins: [
+    expo(),
     haveIBeenPwned({
       customPasswordCompromisedMessage:
         "That password has shown up in a data breach. Please choose a different one.",

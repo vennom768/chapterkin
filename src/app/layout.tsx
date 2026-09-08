@@ -16,6 +16,10 @@ export const metadata: Metadata = {
   title: "ChapterKin",
   description:
     "Personalized bedtime stories for your family. The same book can help a child learn to read, from first words to the parent read-aloud.",
+  icons: {
+    icon: "/apple-touch-icon.png",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export const viewport: Viewport = {

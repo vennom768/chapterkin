@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "ChapterKin",
+    "slug": "chapterkin",
+    "scheme": "chapterkin",
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#f7f0e4"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.chapterkin.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "ChapterKin uses the camera only if you take a photo to help draw your child. We do not keep the photo.",
+        "NSPhotoLibraryUsageDescription": "ChapterKin can use one photo from your library to help draw your child. We do not keep the photo.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.chapterkin.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#f7f0e4",
+        "foregroundImage": "./assets/adaptive-icon.png"
+      },
+      "permissions": ["CAMERA", "READ_MEDIA_IMAGES"],
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-web-browser",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "ChapterKin can use one photo to help draw your child. We do not keep the photo.",
+          "cameraPermission": "ChapterKin uses the camera only if you take a photo to help draw your child. We do not keep the photo."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

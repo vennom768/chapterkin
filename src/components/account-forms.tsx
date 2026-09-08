@@ -133,3 +133,43 @@ export function ChangePasswordForm() {
     </form>
   );
 }
+
+export function DeleteAccountForm() {
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  return (
+    <form
+      className="space-y-4"
+      onSubmit={async (event) => {
+        event.preventDefault();
+        const confirmed = window.confirm(
+          "Delete this ChapterKin account, the family, and remaining stories? This cannot be undone.",
+        );
+        if (!confirmed) return;
+        setPending(true);
+        setError(null);
+        const result = await authClient.deleteUser({
+          callbackURL: "/",
+        });
+        if (result.error) {
+          setError(result.error.message ?? "Could not delete this account.");
+          setPending(false);
+          return;
+        }
+        router.replace("/");
+        router.refresh();
+      }}
+    >
+      <p className="text-sm text-muted">
+        This removes the parent login, children, drawings, and stories we still
+        store. Website billing should be canceled separately if a plan is active.
+      </p>
+      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      <Button type="submit" variant="danger" disabled={pending}>
+        {pending ? "Deleting..." : "Delete account"}
+      </Button>
+    </form>
+  );
+}

@@ -23,6 +23,7 @@ import {
 } from "@/lib/portrait-generate";
 import { getChildForUser } from "@/lib/queries/children";
 import { listPortraitsForChild } from "@/lib/queries/portraits";
+import { selectPortraitForUser } from "@/lib/services/portraits";
 import { getCurrentUser, requireUser } from "@/lib/session";
 import { getStripe, isStripeConfigured } from "@/lib/stripe";
 import { createId } from "@/lib/utils";
@@ -136,35 +137,10 @@ export async function generateInitialPortraits(
 
 export async function selectChildPortrait(childId: string, portraitId: string) {
   const user = await requireUser();
-  const child = await getChildForUser(user.id, childId);
-  if (!child) {
-    throw new Error("Child profile not found.");
+  const result = await selectPortraitForUser(user.id, childId, portraitId);
+  if (!result.ok) {
+    throw new Error(result.error);
   }
-  const [portrait] = await db
-    .select()
-    .from(childPortrait)
-    .where(
-      and(
-        eq(childPortrait.id, portraitId),
-        eq(childPortrait.childId, childId),
-        eq(childPortrait.userId, user.id),
-      ),
-    )
-    .limit(1);
-  if (!portrait) {
-    throw new Error("That drawing was not found.");
-  }
-  await db
-    .update(childProfile)
-    .set({ selectedPortraitId: portraitId, updatedAt: new Date() })
-    .where(eq(childProfile.id, childId));
-  after(() =>
-    trackEvent("portrait_selected", {
-      userId: user.id,
-      properties: { childId, portraitId },
-    }),
-  );
-  revalidateChild(childId);
 }
 
 export async function startPortraitPackCheckout(childId: string) {

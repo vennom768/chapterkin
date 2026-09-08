@@ -202,9 +202,18 @@ export default async function LandingPage() {
 
       <footer className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
         <p>ChapterKin · bedtime stories for your family</p>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4">
           <Link href="/pricing" className="font-semibold text-navy">
             Pricing
+          </Link>
+          <Link href="/privacy" className="font-semibold text-navy">
+            Privacy
+          </Link>
+          <Link href="/terms" className="font-semibold text-navy">
+            Terms
+          </Link>
+          <Link href="/support" className="font-semibold text-navy">
+            Support
           </Link>
           <Link href="/sign-in" className="font-semibold text-navy">
             Sign in
