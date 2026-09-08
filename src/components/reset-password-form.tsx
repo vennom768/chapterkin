@@ -2,14 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function ResetPasswordForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const invalid = searchParams.get("error") === "INVALID_TOKEN";
@@ -57,7 +56,12 @@ export function ResetPasswordForm() {
           setPending(false);
           return;
         }
-        router.push("/sign-in?reset=1");
+        try {
+          await authClient.signOut();
+        } catch {
+          // Reset already revoked sessions; still clear the browser cookie if we can.
+        }
+        window.location.replace("/sign-in?reset=1");
       }}
     >
       <div>

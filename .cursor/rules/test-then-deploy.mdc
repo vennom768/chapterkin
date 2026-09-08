@@ -11,3 +11,4 @@ After UI, product, or app changes:
 2. Only after local testing passes: commit, push `HEAD` to `origin/main`, and deploy Railway production (`railway up` if GitHub autodeploy does not start).
 3. Confirm the live site at `https://chapterkin-production.up.railway.app` (and `www.chapterkin.com` once DNS is live). Watch Railway logs for migrate/schema errors.
 4. Do not leave working product changes sitting only on local.
+5. Do not ask whether to commit, push, or deploy. After local verification passes, do it and report the live result.

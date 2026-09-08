@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { story, subscription } from "@/lib/db/schema";
 import { COMPLIMENTARY_STORIES, PLANS, type PlanId, isPlanId } from "@/lib/plans";
 
-const ACTIVE_STATUSES = new Set(["active", "trialing", "past_due"]);
+const ACTIVE_STATUSES = new Set(["active", "trialing", "past_due", "promo"]);
 
 export async function getSubscriptionForUser(userId: string) {
   const [row] = await db
@@ -47,6 +47,7 @@ export async function getUsage(userId: string) {
     plan,
     planId,
     paid,
+    promo: record?.status === "promo",
     used: paid ? used : complimentaryUsed,
     limit,
     remaining,

@@ -26,11 +26,13 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(signIn);
   }
 
+  const justReset = pathname === "/sign-in" && request.nextUrl.searchParams.get("reset") === "1";
   if (
     (pathname === "/sign-in" ||
       pathname === "/sign-up" ||
       pathname === "/forgot-password") &&
-    sessionCookie
+    sessionCookie &&
+    !justReset
   ) {
     return NextResponse.redirect(new URL("/home", request.url));
   }

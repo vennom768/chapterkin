@@ -51,7 +51,7 @@ export function AppShell({
           </div>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-5xl px-4 py-6 pb-8 sm:py-8">{children}</main>
+      <main className="mx-auto w-full max-w-5xl px-4 py-6 pb-10 sm:py-8">{children}</main>
       <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-card/95 px-2 pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:hidden">
         <div className="mx-auto grid max-w-md grid-cols-4">
           {links.map((link) => {

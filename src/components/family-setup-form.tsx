@@ -309,7 +309,8 @@ export function FamilySetupForm({ defaultFamilyName }: { defaultFamilyName: stri
               Parents, grandparents, pets
             </h2>
             <p className="text-sm text-muted">
-              Optional. Shared across every child&apos;s stories.
+              Optional. Shared across every child&apos;s stories. Horses, ponies,
+              goats, reptiles, and other uncommon pets are welcome.
             </p>
           </div>
           <Button
@@ -390,7 +391,7 @@ export function FamilySetupForm({ defaultFamilyName }: { defaultFamilyName: stri
               </div>
               <div className="flex items-end gap-2">
                 <div className="flex-1">
-                  <Label>Species or breed (pets)</Label>
+                  <Label>Animal or breed</Label>
                   <Input
                     value={member.speciesOrBreed}
                     onChange={(event) =>
@@ -402,7 +403,7 @@ export function FamilySetupForm({ defaultFamilyName }: { defaultFamilyName: stri
                         ),
                       )
                     }
-                    placeholder="golden retriever"
+                    placeholder="Shetland pony, goat, bearded dragon..."
                   />
                 </div>
                 <Button

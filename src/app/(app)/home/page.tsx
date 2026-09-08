@@ -42,8 +42,8 @@ export default async function HomePage() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         {children.map((child) => (
-          <Link key={child.id} href={`/stories/new?childId=${child.id}`}>
-            <Card className="h-full transition-transform hover:-translate-y-0.5">
+          <Card key={child.id} className="flex h-full flex-col justify-between">
+            <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-accent">
                 {formatAge(child.age, child.ageMonths)}
                 {child.calledBy && child.calledBy !== child.name
@@ -53,13 +53,30 @@ export default async function HomePage() {
               <h2 className="mt-1 font-serif text-3xl text-navy">
                 {child.calledBy || child.name}
               </h2>
-              <p className="mt-3 text-sm font-semibold text-accent">
+            </div>
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+              <Link
+                href={`/stories/new?childId=${child.id}`}
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent-dark sm:w-auto"
+              >
                 Write tonight&apos;s story
-              </p>
-            </Card>
-          </Link>
+              </Link>
+              <Link
+                href={`/children/${child.id}`}
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-border bg-white px-5 py-2.5 text-sm font-semibold text-navy hover:bg-gold/20 sm:w-auto"
+              >
+                Edit details
+              </Link>
+            </div>
+          </Card>
         ))}
       </div>
+      <Link
+        href="/children/new"
+        className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-border bg-white px-5 py-2.5 text-sm font-semibold text-navy hover:bg-gold/20 sm:w-auto"
+      >
+        Add a child
+      </Link>
 
       {recent.length > 0 ? (
         <section>

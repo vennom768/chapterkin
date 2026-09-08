@@ -98,23 +98,24 @@ export function HouseholdForm({
       <div className="flex flex-col gap-3">
         <p className="text-sm text-muted">
           Parents, grandparents, friends, and pets can be built like a child so
-          they look the same in every book. Siblings are the other kids in this
-          family.
+          they look the same in every book. Horses, ponies, barn animals,
+          reptiles, and other uncommon pets are fine. Siblings are the other
+          kids in this family.
         </p>
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="secondary" onClick={() => add("parent")}>
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+          <Button type="button" variant="secondary" className="w-full sm:w-auto" onClick={() => add("parent")}>
             <Plus className="h-4 w-4" />
             Parent
           </Button>
-          <Button type="button" variant="secondary" onClick={() => add("grandparent")}>
+          <Button type="button" variant="secondary" className="w-full sm:w-auto" onClick={() => add("grandparent")}>
             <Plus className="h-4 w-4" />
             Grandparent
           </Button>
-          <Button type="button" variant="secondary" onClick={() => add("pet")}>
+          <Button type="button" variant="secondary" className="w-full sm:w-auto" onClick={() => add("pet")}>
             <Plus className="h-4 w-4" />
             Pet
           </Button>
-          <Button type="button" variant="secondary" onClick={() => add("friend")}>
+          <Button type="button" variant="secondary" className="w-full sm:w-auto" onClick={() => add("friend")}>
             <Plus className="h-4 w-4" />
             Friend
           </Button>

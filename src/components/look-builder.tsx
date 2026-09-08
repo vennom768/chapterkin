@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { Label } from "@/components/ui/label";
 import {
   appearanceFromLook,
@@ -142,6 +142,7 @@ export function LookBuilder({
   names?: PersonLook;
   onChange?: (look: PersonLook & { appearance: string; speciesOrBreed: string }) => void;
 }) {
+  const fieldId = useId();
   const [hairStyle, setHairStyle] = useState(() =>
     kind === "pet" ? matchLookOption(usualClothes ?? hair, PET_SIZES) : matchLookOption(hair, HAIR_STYLES),
   );
@@ -219,7 +220,7 @@ export function LookBuilder({
         skin: "",
         usualClothes: petAppearance,
         appearance: petAppearance,
-        speciesOrBreed: eyeColor,
+        speciesOrBreed: eyeColor || clothesExtra.trim(),
       }
     : {
         ...personLook,
@@ -279,7 +280,10 @@ export function LookBuilder({
         kind === "pet"
           ? look.usualClothes
           : appearanceFromLook(look),
-      speciesOrBreed: kind === "pet" ? (next.eyeColor ?? eyeColor) : "",
+      speciesOrBreed:
+        kind === "pet"
+          ? (next.eyeColor ?? eyeColor) || (next.clothesExtra ?? clothesExtra).trim()
+          : "",
     });
   }
 
@@ -352,6 +356,23 @@ export function LookBuilder({
               emit({ hairStyle: value });
             }}
           />
+          <div>
+            <Label htmlFor={`${fieldId}-petExtra`}>Breed, markings, or another animal</Label>
+            <input
+              id={`${fieldId}-petExtra`}
+              value={clothesExtra}
+              onChange={(event) => {
+                setClothesExtra(event.target.value);
+                emit({ clothesExtra: event.target.value });
+              }}
+              placeholder="Shetland pony, a goat named Clover, floppy ears..."
+              className="min-h-11 w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-base"
+            />
+            <p className="mt-1 text-xs text-muted">
+              Horse, pony, barn animals, reptiles, and any other pet are welcome.
+              Type it here if it is not in the list.
+            </p>
+          </div>
         </>
       ) : (
         <>
@@ -403,41 +424,31 @@ export function LookBuilder({
         </>
       )}
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+        {kind === "person" ? (
+          <button
+            type="button"
+            onClick={() => setShowExtras((open) => !open)}
+            className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-border bg-white px-5 py-2.5 text-sm font-semibold text-navy hover:bg-gold/20 sm:w-auto"
+          >
+            {showExtras ? "Hide extra notes" : "Add extra notes"}
+          </button>
+        ) : null}
         <button
           type="button"
-          onClick={() => setShowExtras((open) => !open)}
-          className="text-sm font-semibold text-accent"
+          onClick={clearAll}
+          className="inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-navy hover:bg-gold/15 sm:w-auto"
         >
-          {showExtras ? "Hide extra notes" : "Add extra notes"}
-        </button>
-        <button type="button" onClick={clearAll} className="text-sm font-semibold text-navy">
           Clear look
         </button>
       </div>
 
-      {showExtras ? (
+      {kind === "person" && showExtras ? (
         <div className="space-y-3 rounded-2xl border border-border bg-white p-4">
           <p className="text-sm text-muted">
             Extra notes are optional. Delete anything you do not want in the
             pictures.
           </p>
-          {kind === "pet" ? (
-            <div>
-              <Label htmlFor="petExtra">Pet notes</Label>
-              <input
-                id="petExtra"
-                value={clothesExtra}
-                onChange={(event) => {
-                  setClothesExtra(event.target.value);
-                  emit({ clothesExtra: event.target.value });
-                }}
-                placeholder="Floppy ears, a white patch..."
-                className="min-h-11 w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-base"
-              />
-            </div>
-          ) : (
-            <>
               <div>
                 <Label htmlFor="hairExtra">Hair notes</Label>
                 <input
@@ -490,8 +501,6 @@ export function LookBuilder({
                   className="min-h-11 w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-base"
                 />
               </div>
-            </>
-          )}
         </div>
       ) : null}
     </div>

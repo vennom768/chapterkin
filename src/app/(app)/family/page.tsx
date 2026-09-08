@@ -51,13 +51,13 @@ export default async function FamilyPage() {
       </Card>
 
       <section>
-        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <h2 className="font-serif text-2xl text-navy">Children</h2>
           <Link
             href="/children/new"
-            className="inline-flex min-h-11 items-center text-sm font-semibold text-accent"
+            className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent-dark sm:w-auto"
           >
-            Add another child
+            Add a child
           </Link>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
@@ -74,18 +74,18 @@ export default async function FamilyPage() {
                   {formatAge(child.age, child.ageMonths)}
                 </p>
               </div>
-              <div className="mt-4 flex flex-wrap gap-3">
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                 <Link
                   href={`/stories/new?childId=${child.id}`}
-                  className="inline-flex min-h-11 items-center text-sm font-semibold text-accent"
+                  className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent-dark sm:w-auto"
                 >
                   New story
                 </Link>
                 <Link
                   href={`/children/${child.id}`}
-                  className="inline-flex min-h-11 items-center text-sm font-semibold text-navy"
+                  className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-border bg-white px-5 py-2.5 text-sm font-semibold text-navy hover:bg-gold/20 sm:w-auto"
                 >
-                  Edit profile
+                  Edit details
                 </Link>
               </div>
             </Card>

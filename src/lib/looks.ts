@@ -61,10 +61,27 @@ export const PET_SPECIES: LookOption[] = [
   { value: "cat", label: "Cat" },
   { value: "bunny", label: "Bunny" },
   { value: "hamster", label: "Hamster" },
+  { value: "guinea pig", label: "Guinea pig" },
   { value: "bird", label: "Bird" },
   { value: "fish", label: "Fish" },
   { value: "horse", label: "Horse" },
-  { value: "guinea pig", label: "Guinea pig" },
+  { value: "pony", label: "Pony" },
+  { value: "donkey", label: "Donkey" },
+  { value: "goat", label: "Goat" },
+  { value: "pig", label: "Pig" },
+  { value: "sheep", label: "Sheep" },
+  { value: "chicken", label: "Chicken" },
+  { value: "duck", label: "Duck" },
+  { value: "turtle", label: "Turtle" },
+  { value: "snake", label: "Snake" },
+  { value: "lizard", label: "Lizard" },
+  { value: "gecko", label: "Gecko" },
+  { value: "bearded dragon", label: "Bearded dragon" },
+  { value: "frog", label: "Frog" },
+  { value: "ferret", label: "Ferret" },
+  { value: "rat", label: "Rat" },
+  { value: "hedgehog", label: "Hedgehog" },
+  { value: "hermit crab", label: "Hermit crab" },
 ];
 
 export const PET_COLORS: LookOption[] = [
@@ -83,6 +100,7 @@ export const PET_SIZES: LookOption[] = [
   { value: "small", label: "Small" },
   { value: "medium", label: "Medium" },
   { value: "big", label: "Big" },
+  { value: "very big", label: "Very big" },
 ];
 
 export type PersonLook = {

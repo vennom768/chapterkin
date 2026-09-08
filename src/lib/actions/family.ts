@@ -27,7 +27,7 @@ const householdDraftSchema = z.object({
   name: z.string().min(1).max(80),
   relationship: z.enum(["parent", "grandparent", "friend", "pet", "other"]),
   appearance: z.string().max(400).optional().nullable(),
-  speciesOrBreed: z.string().max(80).optional().nullable(),
+  speciesOrBreed: z.string().max(120).optional().nullable(),
   hair: z.string().max(160).optional().nullable(),
   eyes: z.string().max(120).optional().nullable(),
   skin: z.string().max(120).optional().nullable(),

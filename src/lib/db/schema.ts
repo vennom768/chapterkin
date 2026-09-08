@@ -256,3 +256,27 @@ export const subscription = pgTable("subscription", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
+
+export const promoCode = pgTable("promo_code", {
+  id: text("id").primaryKey(),
+  code: text("code").notNull(),
+  codeKey: text("code_key").notNull().unique(),
+  benefit: text("benefit").notNull().default("unlimited"),
+  active: boolean("active").notNull().default(true),
+  maxRedemptions: integer("max_redemptions"),
+  note: text("note"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const promoRedemption = pgTable("promo_redemption", {
+  id: text("id").primaryKey(),
+  promoCodeId: text("promo_code_id")
+    .notNull()
+    .references(() => promoCode.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .unique()
+    .references(() => user.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});

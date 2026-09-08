@@ -1,15 +1,18 @@
 import { count, desc } from "drizzle-orm";
 import { setAdminViewMode, updateSiteSetting } from "@/lib/actions/admin";
+import { setPromoCodeActive } from "@/lib/actions/promo";
 import { isEmailVerificationRequired } from "@/lib/admin";
+import { AdminPromoForm } from "@/components/admin-promo-form";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { family, story, user } from "@/lib/db/schema";
+import { listPromoCodesWithUsage, PROMO_BENEFITS, isPromoBenefit } from "@/lib/promo";
 import { requireAdmin } from "@/lib/session";
 
 export default async function AdminPage() {
   await requireAdmin();
-  const [requireVerification, [userStats], [familyStats], [storyStats], recentUsers] =
+  const [requireVerification, [userStats], [familyStats], [storyStats], recentUsers, promoCodes] =
     await Promise.all([
       isEmailVerificationRequired(),
       db.select({ total: count() }).from(user),
@@ -26,6 +29,7 @@ export default async function AdminPage() {
         .from(user)
         .orderBy(desc(user.createdAt))
         .limit(12),
+      listPromoCodesWithUsage(),
     ]);
 
   return (
@@ -54,6 +58,54 @@ export default async function AdminPage() {
         <form action={setAdminViewMode.bind(null, "parent")}>
           <Button type="submit">Use ChapterKin as a parent</Button>
         </form>
+      </Card>
+
+      <Card className="space-y-4">
+        <div>
+          <h2 className="font-serif text-2xl text-navy">Promo codes</h2>
+          <p className="mt-1 text-sm text-muted">
+            Give testers a code on signup for a free unlimited account. Codes
+            are case-insensitive. Turn one off any time.
+          </p>
+        </div>
+        <AdminPromoForm />
+        {promoCodes.length === 0 ? (
+          <p className="text-sm text-muted">No promo codes yet.</p>
+        ) : (
+          <ul className="divide-y divide-border">
+            {promoCodes.map((item) => {
+              const benefit = isPromoBenefit(item.benefit)
+                ? PROMO_BENEFITS[item.benefit].label
+                : item.benefit;
+              const uses =
+                item.maxRedemptions == null
+                  ? `${item.redemptions} used`
+                  : `${item.redemptions} of ${item.maxRedemptions} used`;
+              return (
+                <li
+                  key={item.id}
+                  className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div>
+                    <p className="font-semibold text-navy">
+                      <span className="font-mono">{item.code}</span>
+                      {item.active ? "" : " · off"}
+                    </p>
+                    <p className="text-sm text-muted">
+                      {benefit} · {uses}
+                      {item.note ? ` · ${item.note}` : ""}
+                    </p>
+                  </div>
+                  <form action={setPromoCodeActive.bind(null, item.id, !item.active)}>
+                    <Button type="submit" variant="secondary">
+                      {item.active ? "Turn off" : "Turn on"}
+                    </Button>
+                  </form>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </Card>
 
       <Card className="space-y-4">

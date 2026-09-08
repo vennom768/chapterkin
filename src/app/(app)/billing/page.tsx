@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BillingPortalButton } from "@/components/billing-portal-button";
 import { PlanPicker } from "@/components/plan-picker";
+import { PromoRedeemForm } from "@/components/promo-redeem-form";
 import { Card } from "@/components/ui/card";
 import { getUsage } from "@/lib/billing";
 import { planStoryLabel } from "@/lib/plans";
@@ -38,11 +39,13 @@ export default async function BillingPage({
       <Card className="space-y-3">
         <h2 className="font-serif text-2xl text-navy">This month</h2>
         <p className="text-lg">
-          {usage.paid
-            ? usage.plan
-              ? `${usage.plan.name} · ${planStoryLabel(usage.plan.storiesPerMonth)}`
-              : "Active plan"
-            : "Complimentary first story"}
+          {usage.promo
+            ? "Tester promo · Unlimited stories"
+            : usage.paid
+              ? usage.plan
+                ? `${usage.plan.name} · ${planStoryLabel(usage.plan.storiesPerMonth)}`
+                : "Active plan"
+              : "Complimentary first story"}
         </p>
         <p className="text-muted">
           {usage.limit == null
@@ -55,7 +58,7 @@ export default async function BillingPage({
             {usage.record.cancelAtPeriodEnd ? " Cancellation is scheduled." : ""}
           </p>
         ) : null}
-        {usage.paid ? <BillingPortalButton /> : null}
+        {usage.paid && usage.record?.stripeCustomerId ? <BillingPortalButton /> : null}
         {!isStripeConfigured() ? (
           <p className="text-sm text-muted">
             Stripe keys are not set yet, so checkout will not open. Add
@@ -63,6 +66,16 @@ export default async function BillingPage({
           </p>
         ) : null}
       </Card>
+
+      {!usage.paid ? (
+        <Card className="space-y-3">
+          <h2 className="font-serif text-2xl text-navy">Have a promo code?</h2>
+          <p className="text-sm text-muted">
+            Testers can apply a code here for a free unlimited account.
+          </p>
+          <PromoRedeemForm />
+        </Card>
+      ) : null}
 
       <section className="space-y-4">
         <h2 className="font-serif text-2xl text-navy">Change plan</h2>

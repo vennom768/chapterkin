@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { redeemPromoCode, validatePromoCode } from "@/lib/actions/promo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,11 +28,21 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
         const password = String(form.get("password") ?? "");
         const confirm = String(form.get("confirmPassword") ?? "");
         const name = String(form.get("name") ?? "").trim();
+        const promoCode = String(form.get("promoCode") ?? "").trim();
 
         if (mode === "sign-up" && password !== confirm) {
           setError("Those passwords do not match.");
           setPending(false);
           return;
+        }
+
+        if (mode === "sign-up" && promoCode) {
+          const check = await validatePromoCode(promoCode);
+          if (!check.ok) {
+            setError(check.error);
+            setPending(false);
+            return;
+          }
         }
 
         let result;
@@ -61,12 +72,19 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
             result.error.code === "EMAIL_NOT_VERIFIED" ||
             /verif/i.test(message);
           if (unverified) {
+            if (mode === "sign-up" && promoCode) {
+              await redeemPromoCode(promoCode);
+            }
             router.push(`/check-email?email=${encodeURIComponent(email)}`);
             return;
           }
           setError(message);
           setPending(false);
           return;
+        }
+
+        if (mode === "sign-up" && promoCode) {
+          await redeemPromoCode(promoCode);
         }
 
         router.push(nextPath.startsWith("/") ? nextPath : "/home");
@@ -125,6 +143,17 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
             minLength={8}
             placeholder="Type it again"
             autoComplete="new-password"
+          />
+        </div>
+      ) : null}
+      {mode === "sign-up" ? (
+        <div>
+          <Label htmlFor="promoCode">Promo code (optional)</Label>
+          <Input
+            id="promoCode"
+            name="promoCode"
+            placeholder="Testers can enter a code for a free unlimited account"
+            autoComplete="off"
           />
         </div>
       ) : null}
