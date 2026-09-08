@@ -28,6 +28,7 @@ await client.unsafe(`
   ALTER TABLE household_member ADD COLUMN IF NOT EXISTS skin text;
   ALTER TABLE household_member ADD COLUMN IF NOT EXISTS usual_clothes text;
   ALTER TABLE story_page ADD COLUMN IF NOT EXISTS text_levels text;
+  ALTER TABLE child_profile ADD COLUMN IF NOT EXISTS sex text;
   ALTER TABLE child_profile ADD COLUMN IF NOT EXISTS selected_portrait_id text;
   ALTER TABLE child_profile ADD COLUMN IF NOT EXISTS portrait_packs integer DEFAULT 0 NOT NULL;
   ALTER TABLE story ADD COLUMN IF NOT EXISTS last_read_at timestamp;

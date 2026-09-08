@@ -3,16 +3,19 @@
 import { useMemo, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { saveFamilyOnboarding } from "@/lib/actions/family";
+import { ChildSexFields } from "@/components/child-sex-fields";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import type { ChildSex } from "@/lib/child-sex";
 
 type KidDraft = {
   name: string;
   calledBy: string;
   age: string;
   ageMonths: string;
+  sex: ChildSex | "";
   favoriteThings: string;
   callsMom: string;
   callsDad: string;
@@ -29,6 +32,7 @@ const emptyKid = (): KidDraft => ({
   calledBy: "",
   age: "5",
   ageMonths: "0",
+  sex: "",
   favoriteThings: "",
   callsMom: "",
   callsDad: "",
@@ -54,13 +58,15 @@ export function FamilySetupForm({ defaultFamilyName }: { defaultFamilyName: stri
             (kid) =>
               kid.name.trim() &&
               kid.calledBy.trim() &&
-              kid.favoriteThings.trim(),
+              kid.favoriteThings.trim() &&
+              (kid.sex === "boy" || kid.sex === "girl"),
           )
           .map((kid) => ({
             name: kid.name.trim(),
             calledBy: kid.calledBy.trim(),
             age: Number(kid.age),
             ageMonths: Number(kid.age) < 1 ? Number(kid.ageMonths) || 0 : null,
+            sex: kid.sex,
             favoriteThings: kid.favoriteThings.trim(),
             callsMom: kid.callsMom.trim() || null,
             callsDad: kid.callsDad.trim() || null,
@@ -226,6 +232,20 @@ export function FamilySetupForm({ defaultFamilyName }: { defaultFamilyName: stri
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 ) : null}
+              </div>
+              <div className="sm:col-span-3">
+                <ChildSexFields
+                  name={`sex-${index}`}
+                  value={kid.sex}
+                  required={index === 0}
+                  onChange={(sex) =>
+                    setKids((current) =>
+                      current.map((item, itemIndex) =>
+                        itemIndex === index ? { ...item, sex } : item,
+                      ),
+                    )
+                  }
+                />
               </div>
               {Number(kid.age) < 1 ? (
                 <div>

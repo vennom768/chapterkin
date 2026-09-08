@@ -83,6 +83,7 @@ export const childProfile = pgTable("child_profile", {
   calledBy: text("called_by").notNull(),
   age: integer("age").notNull(),
   ageMonths: integer("age_months"),
+  sex: text("sex"),
   callsMom: text("calls_mom"),
   callsDad: text("calls_dad"),
   hair: text("hair"),

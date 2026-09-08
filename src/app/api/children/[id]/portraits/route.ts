@@ -2,8 +2,34 @@ import { NextResponse } from "next/server";
 import { generatePortraitBatch, readTemporaryPhoto } from "@/lib/portrait-generate";
 import { auth } from "@/lib/auth";
 import { getChildForUser } from "@/lib/queries/children";
+import { listPortraitsForChild } from "@/lib/queries/portraits";
 
 export const maxDuration = 180;
+
+export async function GET(
+  _request: Request,
+  context: { params: Promise<{ id: string }> },
+) {
+  const session = await auth.api.getSession({ headers: _request.headers });
+  if (!session?.user) {
+    return NextResponse.json({ error: "Sign in to see these drawings." }, { status: 401 });
+  }
+
+  const { id } = await context.params;
+  const child = await getChildForUser(session.user.id, id);
+  if (!child) {
+    return NextResponse.json({ error: "Child profile not found." }, { status: 404 });
+  }
+
+  const portraits = await listPortraitsForChild(session.user.id, id);
+  return NextResponse.json({
+    portraits: portraits.map((portrait) => ({
+      id: portrait.id,
+      imagePath: portrait.imagePath,
+      source: portrait.source,
+    })),
+  });
+}
 
 export async function POST(
   request: Request,

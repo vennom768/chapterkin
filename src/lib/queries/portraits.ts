@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { childPortrait } from "@/lib/db/schema";
 
@@ -7,7 +7,7 @@ export async function listPortraitsForChild(userId: string, childId: string) {
     .select()
     .from(childPortrait)
     .where(and(eq(childPortrait.userId, userId), eq(childPortrait.childId, childId)))
-    .orderBy(desc(childPortrait.createdAt));
+    .orderBy(asc(childPortrait.createdAt));
 }
 
 export async function getPortraitForUser(userId: string, portraitId: string) {

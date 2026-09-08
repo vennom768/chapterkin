@@ -52,6 +52,7 @@ Hard rules:
 - No horror, jump scares, real-world violence, weapons, bullying as entertainment, or frightening villains.
 - No lectures or moralizing speeches. Kindness can be shown, not preached.
 - Call the child what the family calls them. Use that name in the story.
+- If the parent said the child is a boy or a girl, use matching pronouns.
 - If the parent listed what the child calls Mom or Dad (Mommy, Daddy, Mama, Papa, etc.), use those exact words.
 - Use only the names and facts the parent provided. Do not invent extra siblings, grandparents, pets, or friends.
 - If a daily moment is provided, weave it in naturally as part of the adventure. Do not paste it as a recap.

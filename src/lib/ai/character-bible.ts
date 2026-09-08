@@ -1,4 +1,5 @@
 import { formatAge, formatAgeForArt } from "@/lib/age";
+import { childSexArtLine, childSexStoryLine } from "@/lib/child-sex";
 import { bookArtBible } from "@/lib/illustration-styles";
 import type { childProfile } from "@/lib/db/schema";
 
@@ -29,7 +30,8 @@ export function buildCharacterBible(
     bookArtBible(styleId),
     `Main child, keep this exact look on every page including the cover: ${nickname}, ${formatAgeForArt(child.age, child.ageMonths)}${nickname !== child.name ? ` (given name ${child.name})` : ""}.`,
     `AGE LOCK: ${nickname} is ${formatAgeForArt(child.age, child.ageMonths)}. Draw them that exact age on the cover and every interior page. Same height, same face, same body. Do not make them a baby, a toddler of a different age, a bigger kid, or a teen unless the parent tonight-note explicitly asks to change their age.`,
-  ];
+    childSexArtLine(child.sex),
+  ].filter((line): line is string => Boolean(line));
 
   const appearance = childAppearanceLine(child);
   if (appearance) {
@@ -57,7 +59,8 @@ export function describeChildForStory(child: Child, characters: StoryPerson[]) {
   const parts = [
     `The child's given name is ${child.name}. The family calls them "${nickname}". Use "${nickname}" in the story.`,
     `Age: ${formatAge(child.age, child.ageMonths)}. Keep them this age in the story and in every picture unless the parent's tonight note explicitly asks for a different age.`,
-  ];
+    childSexStoryLine(child.sex),
+  ].filter((part): part is string => Boolean(part));
   if (child.callsMom) {
     parts.push(`They call their mom "${child.callsMom}". Use that word, not "mother".`);
   }

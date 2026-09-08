@@ -6,6 +6,7 @@ import { generateLocalPng } from "@/lib/ai/local-images";
 import { mockPageSvg } from "@/lib/ai/mock-images";
 import { isLocalStoryProvider, isMockStoryProvider } from "@/lib/ai/provider";
 import { formatAgeForArt } from "@/lib/age";
+import { childSexArtLine } from "@/lib/child-sex";
 import type { childProfile } from "@/lib/db/schema";
 
 const STORAGE_DIR = path.join(process.cwd(), "storage", "images");
@@ -31,6 +32,7 @@ export function childPortraitPrompt(
     : "Draw from the written look only. No photograph was provided.";
   return [
     `Square children's picture-book illustration of the story's main character, ${name}. They are ${age}.`,
+    childSexArtLine(child.sex),
     look ? `Keep this exact look: ${look}.` : "",
     "Soft watercolor bedtime picture-book art, cream background, kind expression. Not a photograph. No text, no watermark, no caption.",
     photoRule,

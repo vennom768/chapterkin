@@ -15,6 +15,7 @@ const childDraftSchema = z.object({
   calledBy: z.string().min(1, "Tell us what you call them").max(80),
   age: z.coerce.number().int().min(0).max(12),
   ageMonths: z.coerce.number().int().min(0).max(11).optional().nullable(),
+  sex: z.enum(["boy", "girl"], { message: "Choose boy or girl for each child." }),
   favoriteThings: z
     .string()
     .min(2, "Tell us a little about each child")
@@ -98,6 +99,7 @@ export async function saveFamilyOnboarding(formData: FormData) {
       calledBy: child.calledBy,
       age: child.age,
       ageMonths: child.age < 1 ? (child.ageMonths ?? 0) : null,
+      sex: child.sex,
       favoriteThings: child.favoriteThings,
       callsMom: child.callsMom ?? null,
       callsDad: child.callsDad ?? null,

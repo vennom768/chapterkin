@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AgeFields } from "@/components/age-fields";
+import { ChildSexFields } from "@/components/child-sex-fields";
 import { LookBuilder } from "@/components/look-builder";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -19,6 +20,7 @@ export function ChildForm({
     calledBy: string;
     age: number;
     ageMonths?: number | null;
+    sex?: string | null;
     hair: string | null;
     eyes: string | null;
     skin: string | null;
@@ -118,6 +120,9 @@ export function ChildForm({
           />
           <input type="hidden" name="age" value={age} />
           <input type="hidden" name="ageMonths" value={Number(age) < 1 ? ageMonths : ""} />
+        </div>
+        <div className="sm:col-span-2">
+          <ChildSexFields value={child?.sex} />
         </div>
       </section>
 

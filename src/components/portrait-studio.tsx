@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { selectChildPortrait, startPortraitPackCheckout } from "@/lib/actions/portraits";
 import { Button } from "@/components/ui/button";
-import { portraitPackPriceLabel, portraitsRemaining } from "@/lib/portraits";
+import { FREE_PORTRAITS, portraitPackPriceLabel, portraitsRemaining } from "@/lib/portraits";
 import { cn } from "@/lib/utils";
 
 type Portrait = {
@@ -19,7 +18,7 @@ export function PortraitStudio({
   childName,
   selectedPortraitId,
   packs,
-  portraits,
+  portraits: initialPortraits,
   drawing: startDrawing = false,
 }: {
   childId: string;
@@ -29,11 +28,25 @@ export function PortraitStudio({
   portraits: Portrait[];
   drawing?: boolean;
 }) {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const [waiting, setWaiting] = useState(startDrawing);
+  const [portraits, setPortraits] = useState(initialPortraits);
+  const [waiting, setWaiting] = useState(startDrawing && initialPortraits.length < FREE_PORTRAITS);
   const remaining = portraitsRemaining(portraits.length, packs);
+  const drawingMore = waiting && portraits.length < FREE_PORTRAITS;
+  const drawing = pending || drawingMore;
+
+  const loadPortraits = useCallback(async () => {
+    const response = await fetch(`/api/children/${childId}/portraits`);
+    const payload = (await response.json().catch(() => null)) as
+      | { portraits?: Portrait[] }
+      | null;
+    if (!response.ok || !payload?.portraits) {
+      return [] as Portrait[];
+    }
+    setPortraits(payload.portraits);
+    return payload.portraits;
+  }, [childId]);
 
   async function drawThreePictures() {
     setPending(true);
@@ -52,7 +65,7 @@ export function PortraitStudio({
         setWaiting(false);
         return;
       }
-      router.refresh();
+      await loadPortraits();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not draw these pictures.");
       setWaiting(false);
@@ -62,28 +75,39 @@ export function PortraitStudio({
   }
 
   useEffect(() => {
-    if (portraits.length > 0) {
-      setWaiting(false);
+    setPortraits(initialPortraits);
+  }, [initialPortraits]);
+
+  useEffect(() => {
+    if (!waiting || portraits.length >= FREE_PORTRAITS) {
+      if (portraits.length >= FREE_PORTRAITS) {
+        setWaiting(false);
+      }
       return;
     }
-    if (!waiting) {
-      return;
-    }
+    void loadPortraits();
     const interval = window.setInterval(() => {
-      router.refresh();
+      void loadPortraits().then((next) => {
+        if (next.length >= FREE_PORTRAITS) {
+          setWaiting(false);
+        }
+      });
     }, 2000);
     const timeout = window.setTimeout(() => {
       window.clearInterval(interval);
       setWaiting(false);
-      setError((current) => current ?? "Those pictures are taking too long. Try again.");
+      setError((current) =>
+        current ??
+        (portraits.length
+          ? null
+          : "Those pictures are taking too long. Try again."),
+      );
     }, 180000);
     return () => {
       window.clearInterval(interval);
       window.clearTimeout(timeout);
     };
-  }, [portraits.length, router, waiting]);
-
-  const drawing = pending || (waiting && portraits.length === 0);
+  }, [loadPortraits, portraits.length, waiting]);
 
   return (
     <div className="space-y-6">
@@ -98,7 +122,9 @@ export function PortraitStudio({
       {portraits.length ? (
         <div>
           <p className="mb-3 text-sm font-semibold text-navy">
-            Tap the one stories should use
+            {drawingMore
+              ? `Showing ${portraits.length} of ${FREE_PORTRAITS}. The rest are still drawing.`
+              : "Tap the one stories should use"}
           </p>
           <div className="grid gap-3 sm:grid-cols-3">
             {portraits.map((portrait) => {
@@ -125,6 +151,16 @@ export function PortraitStudio({
                 </button>
               );
             })}
+            {drawingMore
+              ? Array.from({ length: FREE_PORTRAITS - portraits.length }).map((_, index) => (
+                  <div
+                    key={`pending-${index}`}
+                    className="flex aspect-square items-center justify-center rounded-2xl border border-dashed border-border bg-white text-center text-sm text-muted"
+                  >
+                    Drawing...
+                  </div>
+                ))
+              : null}
           </div>
         </div>
       ) : (
@@ -153,7 +189,7 @@ export function PortraitStudio({
         <Button
           type="button"
           variant="secondary"
-          disabled={pending}
+          disabled={pending || drawingMore}
           onClick={async () => {
             setPending(true);
             setError(null);
