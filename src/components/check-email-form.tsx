@@ -31,7 +31,7 @@ export function CheckEmailForm({ email }: { email?: string }) {
             setMessage(null);
             const result = await authClient.sendVerificationEmail({
               email,
-              callbackURL: "/onboarding",
+              callbackURL: "/pricing?pay=1",
             });
             if (result.error) {
               setError(result.error.message ?? "Could not resend that email.");
@@ -48,8 +48,8 @@ export function CheckEmailForm({ email }: { email?: string }) {
       {error ? <p className="text-sm text-red-700">{error}</p> : null}
       <p className="text-center text-sm text-muted">
         Wrong address?{" "}
-        <Link href="/sign-up" className="font-semibold text-navy">
-          Create the account again
+        <Link href="/pricing" className="font-semibold text-navy">
+          See plans
         </Link>
       </p>
     </div>

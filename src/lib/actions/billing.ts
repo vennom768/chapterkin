@@ -83,8 +83,8 @@ export async function startCheckout(planId: string): Promise<BillingActionResult
           quantity: 1,
         },
       ],
-      success_url: `${getAppUrl()}/billing?checkout=success`,
-      cancel_url: `${getAppUrl()}/pricing`,
+      success_url: `${getAppUrl()}/onboarding?checkout=success`,
+      cancel_url: `${getAppUrl()}/pricing?canceled=1`,
     });
     if (!session.url) {
       return { ok: false, error: "Stripe did not return a checkout URL." };

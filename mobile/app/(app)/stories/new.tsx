@@ -1,12 +1,11 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { PlanCard } from "@/src/components/plan-card";
-import { Button, ErrorText, Field, Muted, Screen, Title } from "@/src/components/ui";
+import { Button, ChoiceChip, ErrorText, Field, Muted, Screen, Title } from "@/src/components/ui";
 import { api } from "@/src/lib/api";
 import { useSession } from "@/src/lib/session";
 import type { Series } from "@/src/lib/types";
-import { colors } from "@/src/lib/theme";
 
 const THEMES = ["", "cozy", "adventure", "silly", "nature", "friendship", "bedtime"];
 const STYLES = ["watercolor", "cartoon", "crayon", "collage", "vintage", "ink"];
@@ -53,75 +52,45 @@ export default function NewStoryScreen() {
         <PlanCard />
         <View style={{ flexDirection: "row", gap: 8 }}>
           {(["standalone", "series"] as const).map((value) => (
-            <Pressable
+            <ChoiceChip
               key={value}
+              flex
+              label={value === "standalone" ? "Tonight only" : "A series"}
+              selected={mode === value}
               onPress={() => setMode(value)}
-              style={{
-                flex: 1,
-                minHeight: 44,
-                borderRadius: 999,
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: mode === value ? colors.navy : colors.white,
-                borderWidth: 1,
-                borderColor: colors.border,
-              }}
-            >
-              <Text style={{ color: mode === value ? colors.gold : colors.navy, fontWeight: "700" }}>
-                {value === "standalone" ? "Tonight only" : "A series"}
-              </Text>
-            </Pressable>
+            />
           ))}
         </View>
         {mode === "series"
           ? series.map((item) => (
-              <Pressable key={item.id} onPress={() => setSeriesId(item.id)}>
-                <Text style={{ color: seriesId === item.id ? colors.accent : colors.navy, fontWeight: "700" }}>
-                  {item.title}
-                </Text>
-              </Pressable>
+              <ChoiceChip
+                key={item.id}
+                label={item.title}
+                selected={seriesId === item.id}
+                onPress={() => setSeriesId(item.id)}
+              />
             ))
           : null}
         <Muted>Theme</Muted>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
           {THEMES.map((value) => (
-            <Pressable
+            <ChoiceChip
               key={value || "any"}
+              label={value || "Let it decide"}
+              selected={theme === value}
               onPress={() => setTheme(value)}
-              style={{
-                paddingHorizontal: 12,
-                minHeight: 40,
-                borderRadius: 999,
-                justifyContent: "center",
-                backgroundColor: theme === value ? colors.gold : colors.white,
-                borderWidth: 1,
-                borderColor: colors.border,
-              }}
-            >
-              <Text style={{ color: colors.navy, fontWeight: "700" }}>{value || "Let it decide"}</Text>
-            </Pressable>
+            />
           ))}
         </View>
         <Muted>Art style</Muted>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
           {STYLES.map((value) => (
-            <Pressable
+            <ChoiceChip
               key={value}
+              label={value}
+              selected={style === value}
               onPress={() => setStyle(value)}
-              style={{
-                paddingHorizontal: 12,
-                minHeight: 40,
-                borderRadius: 999,
-                justifyContent: "center",
-                backgroundColor: style === value ? colors.gold : colors.white,
-                borderWidth: 1,
-                borderColor: colors.border,
-              }}
-            >
-              <Text style={{ color: colors.navy, fontWeight: "700", textTransform: "capitalize" }}>
-                {value}
-              </Text>
-            </Pressable>
+            />
           ))}
         </View>
         <Field

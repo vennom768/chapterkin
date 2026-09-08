@@ -1,12 +1,19 @@
 import Link from "next/link";
 import { BookOpen, MoonStar, Sparkles, Users } from "lucide-react";
 import { LandingStoryPreview } from "@/components/landing-story-preview";
+import { PlanPicker } from "@/components/plan-picker";
+import { isAdminEmail } from "@/lib/admin";
+import { getUsage } from "@/lib/billing";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 
 export default async function LandingPage() {
   const user = await getCurrentUser();
   if (user) {
+    const usage = await getUsage(user.id);
+    if (!usage.paid && !isAdminEmail(user.email)) {
+      redirect("/pricing?pay=1");
+    }
     redirect("/home");
   }
 
@@ -27,11 +34,11 @@ export default async function LandingPage() {
             Sign in
           </Link>
           <Link
-            href="/sign-up"
+            href="/pricing"
             className="inline-flex min-h-11 items-center rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-dark"
           >
-            <span className="sm:hidden">Join</span>
-            <span className="hidden sm:inline">Create account</span>
+            <span className="sm:hidden">Plans</span>
+            <span className="hidden sm:inline">See plans</span>
           </Link>
         </div>
       </header>
@@ -55,9 +62,9 @@ export default async function LandingPage() {
                 A new customized story every night.
               </h1>
               <p className="mt-4 text-base leading-7 text-muted sm:text-lg sm:leading-8">
-                One family account. Add the kids, siblings, grandparents, and
-                pets once. Then pick a child and generate a kind, age-right
-                story for tonight — standalone or the next chapter of a series.
+                Try the sample book below, then pick a plan. After you pay, one
+                family login lets you add the kids, siblings, grandparents, and
+                pets. Then write a kind, age-right story for tonight.
               </p>
               <p className="mt-3 text-base leading-7 text-navy sm:text-lg sm:leading-8">
                 The same book can help teach reading. Start with first words,
@@ -65,10 +72,10 @@ export default async function LandingPage() {
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link
-                  href="/sign-up"
+                  href="/pricing"
                   className="inline-flex min-h-12 items-center justify-center rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white hover:bg-accent-dark"
                 >
-                  Create a family account
+                  See plans and start
                 </Link>
                 <Link
                   href="/sign-in"
@@ -77,10 +84,10 @@ export default async function LandingPage() {
                   I already have an account
                 </Link>
                 <Link
-                  href="/pricing"
+                  href="#plans"
                   className="inline-flex min-h-12 items-center justify-center text-sm font-semibold text-accent"
                 >
-                  See plans
+                  Compare plans
                 </Link>
               </div>
             </div>
@@ -184,18 +191,34 @@ export default async function LandingPage() {
             </div>
             <div className="mt-10 flex flex-col gap-3 sm:flex-row">
               <Link
-                href="/sign-up"
+                href="/pricing"
                 className="inline-flex min-h-12 items-center justify-center rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white hover:bg-accent-dark"
               >
-                Create a family account
+                See plans and start
               </Link>
               <Link
-                href="/pricing"
+                href="#plans"
                 className="inline-flex min-h-12 items-center justify-center rounded-full border border-border bg-white px-6 py-3 text-sm font-semibold text-navy"
               >
-                See plans
+                Compare plans
               </Link>
             </div>
+          </div>
+        </section>
+
+        <section id="plans" className="mx-auto max-w-5xl px-4 pb-16">
+          <p className="text-sm font-semibold uppercase tracking-wide text-accent">
+            Plans
+          </p>
+          <h2 className="mt-2 font-serif text-3xl text-navy sm:text-4xl">
+            Choose a plan to start.
+          </h2>
+          <p className="mt-3 max-w-2xl text-muted">
+            No free accounts. Pick a plan, create the parent login, and pay.
+            Then add the kids. Cancel anytime.
+          </p>
+          <div className="mt-8">
+            <PlanPicker signedIn={false} />
           </div>
         </section>
       </main>

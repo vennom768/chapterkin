@@ -13,6 +13,6 @@ export default function Index() {
     );
   }
   if (!me) return <Redirect href="/welcome" />;
-  if (me.needsOnboarding) return <Redirect href="/onboarding" />;
+  if (me.needsOnboarding && me.usage.paid) return <Redirect href="/onboarding" />;
   return <Redirect href="/tonight" />;
 }

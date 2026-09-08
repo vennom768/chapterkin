@@ -3,8 +3,13 @@ import { PlanPicker } from "@/components/plan-picker";
 import { getUsage } from "@/lib/billing";
 import { getCurrentUser } from "@/lib/session";
 
-export default async function PricingPage() {
+export default async function PricingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ pay?: string; canceled?: string }>;
+}) {
   const user = await getCurrentUser();
+  const { pay, canceled } = await searchParams;
   const usage = user ? await getUsage(user.id) : null;
 
   return (
@@ -25,12 +30,19 @@ export default async function PricingPage() {
           Plans for bedtime
         </p>
         <h1 className="mt-2 font-serif text-3xl text-navy sm:text-4xl">
-          Pay for the nights you actually write.
+          {pay ? "Finish a plan to use ChapterKin." : "Pay for the nights you actually write."}
         </h1>
         <p className="mt-3 max-w-2xl text-muted">
-          A printed picture book often costs about $15 for one copy. Plans
-          start at $24.99 a month. Pick a plan to write stories. Cancel anytime.
+          {user
+            ? "This account does not write stories until a plan or promo is on it. Pick a plan to continue, then add the kids."
+            : "A printed picture book often costs about $15 for one copy. Plans start at $24.99 a month. Choose a plan to create your family account. Cancel anytime."}
         </p>
+        {canceled ? (
+          <p className="mt-4 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-navy">
+            Checkout was canceled. Choose a plan when you are ready. The parent
+            login is not active until you pay.
+          </p>
+        ) : null}
         <div className="mt-8">
           <PlanPicker currentPlanId={usage?.planId} signedIn={Boolean(user)} />
         </div>

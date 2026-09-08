@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { isAdminEmail, isEmailVerificationRequired } from "@/lib/admin";
 import { auth } from "@/lib/auth";
+import { getUsage } from "@/lib/billing";
 import { getFamilyWithMembers } from "@/lib/queries/family";
 
 export async function getCurrentUser() {
@@ -34,8 +35,20 @@ export async function requireAdmin() {
   return user;
 }
 
-export async function requireFamily() {
+export async function requirePaidUser() {
   const user = await requireUser();
+  if (isAdminEmail(user.email)) {
+    return user;
+  }
+  const usage = await getUsage(user.id);
+  if (!usage.paid) {
+    redirect("/pricing?pay=1");
+  }
+  return user;
+}
+
+export async function requireFamily() {
+  const user = await requirePaidUser();
   const household = await getFamilyWithMembers(user.id);
   if (!household || household.children.length === 0) {
     redirect("/onboarding");

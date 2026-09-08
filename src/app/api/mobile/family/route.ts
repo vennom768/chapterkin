@@ -1,5 +1,5 @@
 import { corsJson, corsOptions, mobileError } from "@/lib/mobile/http";
-import { serializeFamily } from "@/lib/mobile/serialize";
+import { serializeChild, serializeFamily } from "@/lib/mobile/serialize";
 import { requireMobileUser } from "@/lib/mobile/session";
 import { getFamilyForUser, getFamilyWithMembers } from "@/lib/queries/family";
 import {
@@ -55,6 +55,7 @@ export async function POST(request: Request) {
   return corsJson({
     ok: true,
     family: household ? serializeFamily(household.family, household.household) : null,
+    children: household ? household.children.map(serializeChild) : [],
   });
 }
 

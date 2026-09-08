@@ -111,6 +111,44 @@ export function Card({ children }: { children: React.ReactNode }) {
   return <View style={styles.card}>{children}</View>;
 }
 
+export function ChoiceChip({
+  label,
+  selected,
+  onPress,
+  color,
+  flex,
+}: {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+  color?: string;
+  flex?: boolean;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      style={[
+        styles.chip,
+        selected ? styles.chipSelected : styles.chipIdle,
+        flex ? { flex: 1 } : null,
+      ]}
+    >
+      {color ? (
+        <View
+          style={[
+            styles.chipSwatch,
+            { backgroundColor: color, borderColor: selected ? colors.gold : "rgba(0,0,0,0.12)" },
+          ]}
+        />
+      ) : null}
+      {selected ? <Text style={styles.chipCheck}>✓</Text> : null}
+      <Text style={[styles.chipLabel, selected && styles.chipLabelSelected]}>{label}</Text>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
@@ -187,5 +225,44 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 16,
     gap: 10,
+  },
+  chip: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    minHeight: 44,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+  },
+  chipIdle: {
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  chipSelected: {
+    backgroundColor: colors.navy,
+    borderWidth: 3,
+    borderColor: colors.gold,
+  },
+  chipSwatch: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  chipCheck: {
+    color: colors.gold,
+    fontWeight: "800",
+    fontSize: 14,
+  },
+  chipLabel: {
+    color: colors.navy,
+    fontWeight: "700",
+    fontSize: 14,
+  },
+  chipLabelSelected: {
+    color: colors.gold,
+    fontWeight: "800",
   },
 });

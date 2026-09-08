@@ -3,8 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
+import { startCheckout } from "@/lib/actions/billing";
 import { redeemPromoCode, validatePromoCode } from "@/lib/actions/promo";
+import { authClient } from "@/lib/auth-client";
+import { isPlanId } from "@/lib/plans";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +17,8 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const nextPath = searchParams.get("next") || "/home";
+  const selectedPlan = searchParams.get("plan");
+  const planId = selectedPlan && isPlanId(selectedPlan) ? selectedPlan : null;
 
   return (
     <form
@@ -45,6 +49,12 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
           }
         }
 
+        if (mode === "sign-up" && !promoCode && !planId) {
+          setError("Choose a plan first, or enter a tester promo code.");
+          setPending(false);
+          return;
+        }
+
         let result;
         try {
           result =
@@ -53,7 +63,7 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
                   email,
                   password,
                   name,
-                  callbackURL: "/onboarding",
+                  callbackURL: planId ? `/onboarding?checkout=success` : "/onboarding",
                 })
               : await authClient.signIn.email({
                   email,
@@ -85,6 +95,24 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
 
         if (mode === "sign-up" && promoCode) {
           await redeemPromoCode(promoCode);
+          router.push("/onboarding");
+          router.refresh();
+          return;
+        }
+
+        if (mode === "sign-up" && planId) {
+          const checkout = await startCheckout(planId);
+          if (!checkout.ok) {
+            if (checkout.redirectTo) {
+              router.push(checkout.redirectTo);
+              return;
+            }
+            setError(checkout.error);
+            setPending(false);
+            return;
+          }
+          window.location.assign(checkout.url);
+          return;
         }
 
         router.push(nextPath.startsWith("/") ? nextPath : "/home");
@@ -162,7 +190,9 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
         {pending
           ? "Please wait..."
           : mode === "sign-up"
-            ? "Create family account"
+            ? planId
+              ? "Create account and pay"
+              : "Create account"
             : "Sign in"}
       </Button>
       <p className="text-center text-sm text-muted">
@@ -176,8 +206,8 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
         ) : (
           <>
             New here?{" "}
-            <Link href="/sign-up" className="font-semibold text-navy">
-              Create an account
+            <Link href="/pricing" className="font-semibold text-navy">
+              See plans
             </Link>
           </>
         )}

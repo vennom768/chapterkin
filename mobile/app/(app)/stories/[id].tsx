@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AuthImage } from "@/src/components/auth-image";
-import { Button, ErrorText, Muted } from "@/src/components/ui";
+import { Button, ChoiceChip, ErrorText, Muted } from "@/src/components/ui";
 import { API_URL } from "@/src/lib/auth";
 import { api, authHeaders } from "@/src/lib/api";
 import type { ReaderTexts, StoryDetail } from "@/src/lib/types";
@@ -135,23 +135,12 @@ export default function StoryReaderScreen() {
         </View>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
           {LEVELS.map((item) => (
-            <Pressable
+            <ChoiceChip
               key={item.id}
+              label={item.label}
+              selected={level === item.id}
               onPress={() => setLevel(item.id)}
-              style={{
-                paddingHorizontal: 10,
-                minHeight: 36,
-                borderRadius: 999,
-                justifyContent: "center",
-                backgroundColor: level === item.id ? colors.navy : colors.white,
-                borderWidth: 1,
-                borderColor: colors.border,
-              }}
-            >
-              <Text style={{ color: level === item.id ? colors.gold : colors.navy, fontWeight: "700" }}>
-                {item.label}
-              </Text>
-            </Pressable>
+            />
           ))}
         </View>
         <View

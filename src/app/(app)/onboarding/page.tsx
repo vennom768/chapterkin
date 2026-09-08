@@ -1,11 +1,22 @@
 import { redirect } from "next/navigation";
 import { FamilySetupForm } from "@/components/family-setup-form";
 import { Card } from "@/components/ui/card";
+import { isAdminEmail } from "@/lib/admin";
+import { getUsage } from "@/lib/billing";
 import { getFamilyWithMembers } from "@/lib/queries/family";
 import { requireUser } from "@/lib/session";
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ checkout?: string }>;
+}) {
   const user = await requireUser();
+  const { checkout } = await searchParams;
+  const usage = await getUsage(user.id);
+  if (!usage.paid && !isAdminEmail(user.email) && checkout !== "success") {
+    redirect("/pricing?pay=1");
+  }
   const household = await getFamilyWithMembers(user.id);
   if (household && household.children.length > 0) {
     redirect("/home");

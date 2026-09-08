@@ -4,20 +4,20 @@ import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { AuthImage } from "@/src/components/auth-image";
 import { Button, ErrorText, Muted, Screen, Title } from "@/src/components/ui";
-import { API_URL } from "@/src/lib/auth";
-import { api, authHeaders } from "@/src/lib/api";
+import { api } from "@/src/lib/api";
+import { photoFromAsset, startPortraitBatch } from "@/src/lib/portraits";
 import { useSession } from "@/src/lib/session";
 import type { Portrait } from "@/src/lib/types";
 import { colors } from "@/src/lib/theme";
 
 export default function PortraitScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, drawing: drawingQuery } = useLocalSearchParams<{ id: string; drawing?: string }>();
   const { me, refresh } = useSession();
   const child = me?.children.find((item) => item.id === id);
   const [portraits, setPortraits] = useState<Portrait[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const [drawing, setDrawing] = useState(false);
+  const [drawing, setDrawing] = useState(drawingQuery === "1");
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -50,29 +50,12 @@ export default function PortraitScreen() {
     );
   }
 
-  async function generate(photo?: ImagePicker.ImagePickerAsset) {
+  async function generate(asset?: ImagePicker.ImagePickerAsset) {
     if (!id) return;
     setPending(true);
     setError(null);
     try {
-      const body = new FormData();
-      if (photo?.uri) {
-        body.append("photo", {
-          uri: photo.uri,
-          name: photo.fileName ?? "child.jpg",
-          type: photo.mimeType ?? "image/jpeg",
-        } as never);
-      }
-      const headers = await authHeaders();
-      const response = await fetch(`${API_URL}/api/children/${id}/portraits`, {
-        method: "POST",
-        headers,
-        body,
-      });
-      if (!response.ok) {
-        const data = (await response.json().catch(() => null)) as { error?: string } | null;
-        throw new Error(data?.error ?? "Could not start drawings.");
-      }
+      await startPortraitBatch(id, asset ? photoFromAsset(asset) : null);
       setDrawing(true);
       await load();
     } catch (next) {

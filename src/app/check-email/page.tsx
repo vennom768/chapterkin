@@ -10,7 +10,7 @@ export default async function CheckEmailPage({
   return (
     <AuthShell
       title="Check your email"
-      description="Confirm the address before you add the kids or write a story."
+      description="Confirm the address, then finish your plan. Stories start after payment."
     >
       <CheckEmailForm email={email} />
     </AuthShell>

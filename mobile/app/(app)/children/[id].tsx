@@ -2,8 +2,10 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
 import { Alert, ScrollView } from "react-native";
 import { ChildFields, childPayload, emptyChildDraft } from "@/src/components/child-fields";
+import { ChildPhotoField } from "@/src/components/child-photo-field";
 import { Button, ErrorText, Screen, Title } from "@/src/components/ui";
 import { api } from "@/src/lib/api";
+import { startPortraitBatch, type ChildPhoto } from "@/src/lib/portraits";
 import { useSession } from "@/src/lib/session";
 
 export default function EditChildScreen() {
@@ -30,6 +32,7 @@ export default function EditChildScreen() {
     };
   }, [child]);
   const [draft, setDraft] = useState(initial);
+  const [photo, setPhoto] = useState<ChildPhoto | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -46,6 +49,7 @@ export default function EditChildScreen() {
       <Screen>
         <Title>{child.calledBy || child.name}</Title>
         <ChildFields value={draft} onChange={setDraft} />
+        <ChildPhotoField value={photo} onChange={setPhoto} />
         <ErrorText>{error}</ErrorText>
         <Button
           label="Save details"
@@ -58,6 +62,12 @@ export default function EditChildScreen() {
                 method: "PATCH",
                 body: JSON.stringify(childPayload(draft)),
               });
+              if (photo) {
+                void startPortraitBatch(child.id, photo);
+                await refresh();
+                router.replace(`/children/${child.id}/portrait?drawing=1`);
+                return;
+              }
               await refresh();
               router.back();
             } catch (next) {

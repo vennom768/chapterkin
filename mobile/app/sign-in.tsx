@@ -62,8 +62,8 @@ export default function SignInScreen() {
           <Link href="/forgot-password" style={{ color: colors.accent, fontWeight: "700" }}>
             Forgot password?
           </Link>
-          <Link href="/sign-up" style={{ color: colors.navy, fontWeight: "700" }}>
-            Create a family account
+          <Link href="/welcome" style={{ color: colors.navy, fontWeight: "700" }}>
+            See how it works
           </Link>
           <Link href="/welcome" style={{ color: colors.muted, fontWeight: "700" }}>
             Back

@@ -1,6 +1,6 @@
 import { Pressable, Text, View } from "react-native";
 import { LookBuilder } from "@/src/components/look-builder";
-import { Button, Field, Muted } from "@/src/components/ui";
+import { Button, ChoiceChip, Field, Muted } from "@/src/components/ui";
 import { appearanceFromLook } from "@/src/lib/looks";
 import type { HouseholdMember } from "@/src/lib/types";
 import { colors } from "@/src/lib/theme";
@@ -132,29 +132,12 @@ export function HouseholdFields({
           <Text style={{ color: colors.navy, fontWeight: "700" }}>Who they are</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
             {RELATIONSHIPS.map((relationship) => (
-              <Pressable
+              <ChoiceChip
                 key={relationship}
+                label={relationship[0].toUpperCase() + relationship.slice(1)}
+                selected={member.relationship === relationship}
                 onPress={() => update(index, { relationship })}
-                style={{
-                  minHeight: 36,
-                  paddingHorizontal: 12,
-                  borderRadius: 999,
-                  justifyContent: "center",
-                  backgroundColor: member.relationship === relationship ? colors.navy : colors.card,
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                }}
-              >
-                <Text
-                  style={{
-                    color: member.relationship === relationship ? colors.gold : colors.navy,
-                    fontWeight: "700",
-                    textTransform: "capitalize",
-                  }}
-                >
-                  {relationship}
-                </Text>
-              </Pressable>
+              />
             ))}
           </View>
           <LookBuilder

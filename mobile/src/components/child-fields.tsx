@@ -1,6 +1,6 @@
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { LookBuilder } from "@/src/components/look-builder";
-import { Field, Muted } from "@/src/components/ui";
+import { ChoiceChip, Field, Muted } from "@/src/components/ui";
 import { colors } from "@/src/lib/theme";
 
 export type ChildDraft = {
@@ -8,7 +8,7 @@ export type ChildDraft = {
   calledBy: string;
   age: string;
   ageMonths: string;
-  sex: "boy" | "girl";
+  sex: "boy" | "girl" | "";
   hair: string;
   eyes: string;
   skin: string;
@@ -25,7 +25,7 @@ export function emptyChildDraft(): ChildDraft {
     calledBy: "",
     age: "5",
     ageMonths: "0",
-    sex: "girl",
+    sex: "",
     hair: "",
     eyes: "",
     skin: "",
@@ -44,7 +44,7 @@ export function childPayload(draft: ChildDraft) {
     calledBy: draft.calledBy || draft.name,
     age,
     ageMonths: age < 1 ? Number(draft.ageMonths) || 0 : null,
-    sex: draft.sex,
+    sex: draft.sex === "boy" ? "boy" : "girl",
     hair: draft.hair || null,
     eyes: draft.eyes || null,
     skin: draft.skin || null,
@@ -89,27 +89,20 @@ export function ChildFields({
           onChangeText={(ageMonths: string) => set({ ageMonths })}
         />
       ) : null}
-      <View style={{ flexDirection: "row", gap: 8 }}>
-        {(["girl", "boy"] as const).map((sex) => (
-          <Pressable
-            key={sex}
-            onPress={() => set({ sex })}
-            style={{
-              flex: 1,
-              minHeight: 48,
-              borderRadius: 999,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: value.sex === sex ? colors.navy : colors.white,
-              borderWidth: 1,
-              borderColor: colors.border,
-            }}
-          >
-            <Text style={{ color: value.sex === sex ? colors.gold : colors.navy, fontWeight: "700" }}>
-              {sex === "girl" ? "Girl" : "Boy"}
-            </Text>
-          </Pressable>
-        ))}
+      <View style={{ gap: 8 }}>
+        <Text style={{ color: colors.navy, fontWeight: "700", fontSize: 14 }}>Boy or girl</Text>
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          {(["girl", "boy"] as const).map((sex) => (
+            <ChoiceChip
+              key={sex}
+              flex
+              label={sex === "girl" ? "Girl" : "Boy"}
+              selected={value.sex === sex}
+              onPress={() => set({ sex })}
+            />
+          ))}
+        </View>
+        <Muted>{value.sex ? `Selected: ${value.sex === "girl" ? "Girl" : "Boy"}` : "Tap Girl or Boy."}</Muted>
       </View>
       <View style={{ gap: 8 }}>
         <Text style={{ color: colors.navy, fontSize: 20, fontWeight: "700" }}>What they call their parents</Text>
@@ -134,8 +127,8 @@ export function ChildFields({
       <View style={{ gap: 8 }}>
         <Text style={{ color: colors.navy, fontSize: 20, fontWeight: "700" }}>Build how they look</Text>
         <Muted>
-          Tap face, hair, eyes, and clothes. After you save, you can add a photo and we draw three pictures to pick
-          from.
+          Tap face, hair, eyes, and clothes. You can also add a photo below. When you save, we draw three pictures
+          and you pick the one stories should use.
         </Muted>
       </View>
       <LookBuilder

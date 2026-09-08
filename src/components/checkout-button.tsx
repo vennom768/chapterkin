@@ -25,7 +25,7 @@ export function CheckoutButton({
         disabled={pending}
         onClick={async () => {
           if (!signedIn) {
-            router.push(`/sign-up?next=/pricing`);
+            router.push(`/sign-up?plan=${planId}`);
             return;
           }
           setPending(true);
