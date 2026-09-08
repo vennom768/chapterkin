@@ -6,15 +6,18 @@ import { getChildForUser } from "@/lib/queries/children";
 import { listPortraitsForChild } from "@/lib/queries/portraits";
 import { requireFamily } from "@/lib/session";
 
-export const maxDuration = 120;
+export const maxDuration = 180;
 
 export default async function ChildPortraitPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ drawing?: string }>;
 }) {
   const { user } = await requireFamily();
   const { id } = await params;
+  const { drawing } = await searchParams;
   const child = await getChildForUser(user.id, id);
   if (!child) {
     notFound();
@@ -40,6 +43,7 @@ export default async function ChildPortraitPage({
           childName={child.calledBy || child.name}
           selectedPortraitId={child.selectedPortraitId}
           packs={child.portraitPacks}
+          drawing={drawing === "1"}
           portraits={portraits.map((portrait) => ({
             id: portrait.id,
             imagePath: portrait.imagePath,

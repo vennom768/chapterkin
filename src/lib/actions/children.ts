@@ -9,9 +9,12 @@ import { childProfile } from "@/lib/db/schema";
 import { getFamilyForUser } from "@/lib/queries/family";
 import { listChildren } from "@/lib/queries/children";
 import { trackEvent } from "@/lib/analytics";
-import { generatePortraitBatch, readTemporaryPhoto } from "@/lib/actions/portraits";
-import { requireUser } from "@/lib/session";
+import { getCurrentUser, requireUser } from "@/lib/session";
 import { createId } from "@/lib/utils";
+
+export type SaveChildResult =
+  | { ok: true; childId: string; created: boolean }
+  | { ok: false; error: string; redirectTo?: string };
 
 const childSchema = z.object({
   name: z.string().min(1, "Name is required").max(80),
@@ -34,11 +37,14 @@ function emptyToNull(value: FormDataEntryValue | null) {
   return trimmed.length ? trimmed : null;
 }
 
-export async function saveChild(formData: FormData) {
-  const user = await requireUser();
+export async function saveChild(formData: FormData): Promise<SaveChildResult> {
+  const user = await getCurrentUser();
+  if (!user) {
+    return { ok: false, error: "Sign in to continue.", redirectTo: "/sign-in" };
+  }
   const household = await getFamilyForUser(user.id);
   if (!household) {
-    redirect("/onboarding");
+    return { ok: false, error: "Finish family setup first.", redirectTo: "/onboarding" };
   }
 
   const childId = emptyToNull(formData.get("id"));
@@ -58,9 +64,10 @@ export async function saveChild(formData: FormData) {
   });
 
   if (!parsed.success) {
-    throw new Error(
-      parsed.error.issues[0]?.message ?? "Please check the profile details.",
-    );
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Please check the profile details.",
+    };
   }
 
   const data = parsed.data;
@@ -73,7 +80,7 @@ export async function saveChild(formData: FormData) {
       .where(and(eq(childProfile.id, childId), eq(childProfile.userId, user.id)))
       .limit(1);
     if (!existing[0]) {
-      throw new Error("Child profile not found");
+      return { ok: false, error: "Child profile not found." };
     }
 
     await db
@@ -98,16 +105,10 @@ export async function saveChild(formData: FormData) {
     revalidatePath("/family");
     revalidatePath(`/children/${childId}`);
     revalidatePath("/home");
-    redirect(`/children/${childId}`);
+    return { ok: true, childId, created: false };
   }
 
   const id = createId();
-  let photo;
-  try {
-    photo = await readTemporaryPhoto(formData);
-  } catch (error) {
-    throw error instanceof Error ? error : new Error("Could not read that photo.");
-  }
   await db.insert(childProfile).values({
     id,
     userId: user.id,
@@ -128,19 +129,6 @@ export async function saveChild(formData: FormData) {
     updatedAt: now,
   });
 
-  const [child] = await db
-    .select()
-    .from(childProfile)
-    .where(eq(childProfile.id, id))
-    .limit(1);
-  if (child) {
-    try {
-      await generatePortraitBatch(user.id, child, 3, photo);
-    } catch (error) {
-      console.error("Initial child portraits failed", error);
-    }
-  }
-
   revalidatePath("/family");
   revalidatePath("/home");
   revalidatePath(`/children/${id}/portrait`);
@@ -148,7 +136,7 @@ export async function saveChild(formData: FormData) {
     userId: user.id,
     properties: { childId: id },
   });
-  redirect(`/children/${id}/portrait`);
+  return { ok: true, childId: id, created: true };
 }
 
 export async function deleteChild(childId: string) {

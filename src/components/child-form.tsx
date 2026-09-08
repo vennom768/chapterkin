@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { saveChild } from "@/lib/actions/children";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +29,7 @@ export function ChildForm({
     notes: string | null;
   };
 }) {
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [age, setAge] = useState(String(child?.age ?? 5));
@@ -36,24 +38,44 @@ export function ChildForm({
   return (
     <form
       className="space-y-8"
-      action={async (formData) => {
+      onSubmit={async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        if (!form.reportValidity()) {
+          return;
+        }
         setPending(true);
         setError(null);
+        const formData = new FormData(form);
         const photo = formData.get("photo");
-        if (photo instanceof File && photo.size === 0) {
-          formData.delete("photo");
-        }
+        formData.delete("photo");
+        const photoFile = photo instanceof File && photo.size > 0 ? photo : null;
         try {
-          await saveChild(formData);
-        } catch (err) {
-          if (
-            typeof err === "object" &&
-            err &&
-            "digest" in err &&
-            String((err as { digest?: string }).digest).startsWith("NEXT_REDIRECT")
-          ) {
-            throw err;
+          const result = await saveChild(formData);
+          if (!result.ok) {
+            if (result.redirectTo) {
+              router.push(result.redirectTo);
+              return;
+            }
+            setError(result.error);
+            setPending(false);
+            return;
           }
+          if (result.created) {
+            const portraits = new FormData();
+            if (photoFile) {
+              portraits.set("photo", photoFile);
+            }
+            void fetch(`/api/children/${result.childId}/portraits`, {
+              method: "POST",
+              body: portraits,
+            });
+            router.push(`/children/${result.childId}/portrait?drawing=1`);
+          } else {
+            router.push(`/children/${result.childId}`);
+          }
+          router.refresh();
+        } catch (err) {
           setError(
             err instanceof Error ? err.message : "Could not save this profile.",
           );
@@ -189,13 +211,7 @@ export function ChildForm({
       {error ? <p className="text-sm text-red-700">{error}</p> : null}
 
       <Button type="submit" disabled={pending}>
-        {pending
-          ? child
-            ? "Saving..."
-            : "Saving and drawing three pictures..."
-          : child
-            ? "Save profile"
-            : "Save and draw three pictures"}
+        {pending ? "Saving..." : child ? "Save profile" : "Save and draw three pictures"}
       </Button>
     </form>
   );

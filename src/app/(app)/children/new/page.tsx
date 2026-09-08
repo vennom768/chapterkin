@@ -2,7 +2,7 @@ import { ChildForm } from "@/components/child-form";
 import { Card } from "@/components/ui/card";
 import { requireFamily } from "@/lib/session";
 
-export const maxDuration = 180;
+export const maxDuration = 30;
 
 export default async function NewChildPage() {
   await requireFamily();

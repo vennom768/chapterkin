@@ -2,15 +2,13 @@
 
 import { after } from "next/server";
 import { and, eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
 import { getAppUrl } from "@/lib/app-url";
 import { trackEvent } from "@/lib/analytics";
+import type { ImageReference } from "@/lib/ai/image-generate";
 import {
-  PORTRAIT_VARIATIONS,
   generateChildPortraitPng,
   writePortraitFile,
 } from "@/lib/ai/portraits";
-import type { ImageReference } from "@/lib/ai/image-generate";
 import { isMockStoryProvider } from "@/lib/ai/provider";
 import { db } from "@/lib/db";
 import { childPortrait, childProfile, portraitPackPurchase } from "@/lib/db/schema";
@@ -18,103 +16,20 @@ import {
   PORTRAIT_PACK_CENTS,
   portraitsRemaining,
 } from "@/lib/portraits";
+import {
+  generatePortraitBatch,
+  readTemporaryPhoto,
+  revalidateChild,
+} from "@/lib/portrait-generate";
 import { getChildForUser } from "@/lib/queries/children";
 import { listPortraitsForChild } from "@/lib/queries/portraits";
 import { getCurrentUser, requireUser } from "@/lib/session";
 import { getStripe, isStripeConfigured } from "@/lib/stripe";
 import { createId } from "@/lib/utils";
 
-const PHOTO_MAX_BYTES = 6 * 1024 * 1024;
-const PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
-
 export type PortraitActionResult =
   | { ok: true }
   | { ok: false; error: string; redirectTo?: string };
-
-function revalidateChild(childId: string) {
-  revalidatePath(`/children/${childId}`);
-  revalidatePath(`/children/${childId}/portrait`);
-  revalidatePath("/family");
-  revalidatePath("/home");
-}
-
-export async function readTemporaryPhoto(
-  formData: FormData,
-): Promise<ImageReference | undefined> {
-  const photo = formData.get("photo");
-  if (!(photo instanceof File) || photo.size === 0) {
-    return undefined;
-  }
-  if (photo.size > PHOTO_MAX_BYTES) {
-    throw new Error("That photo is too large. Use a picture under 6 MB.");
-  }
-  if (photo.type && !PHOTO_TYPES.has(photo.type)) {
-    throw new Error("Use a JPG, PNG, or WebP photo.");
-  }
-  return {
-    buffer: Buffer.from(await photo.arrayBuffer()),
-    mime: photo.type || "image/jpeg",
-    filename: "parent-photo-temp.jpg",
-  };
-}
-
-export async function generatePortraitBatch(
-  userId: string,
-  child: typeof childProfile.$inferSelect,
-  count: number,
-  photo?: ImageReference,
-) {
-  const existing = await listPortraitsForChild(userId, child.id);
-  const allowed = portraitsRemaining(existing.length, child.portraitPacks ?? 0);
-  const toMake = Math.min(count, allowed);
-  if (toMake <= 0) {
-    return existing;
-  }
-
-  const results = await Promise.allSettled(
-    Array.from({ length: toMake }, async (_, index) => {
-      const variation = PORTRAIT_VARIATIONS[index % PORTRAIT_VARIATIONS.length];
-      const png = await generateChildPortraitPng(child, {
-        note: variation,
-        photo,
-      });
-      const id = createId();
-      const imagePath = await writePortraitFile(id, png, isMockStoryProvider());
-      await db.insert(childPortrait).values({
-        id,
-        childId: child.id,
-        userId,
-        imagePath,
-        source: photo ? "photo" : "builder",
-        note: variation,
-        createdAt: new Date(),
-      });
-      return id;
-    }),
-  );
-  const created = results.flatMap((result) =>
-    result.status === "fulfilled" ? [result.value] : [],
-  );
-  if (created.length === 0) {
-    const first = results.find((result) => result.status === "rejected");
-    throw first && first.status === "rejected"
-      ? first.reason
-      : new Error("Could not draw these pictures.");
-  }
-
-  after(() =>
-    trackEvent("portrait_generated", {
-      userId,
-      properties: {
-        childId: child.id,
-        source: photo ? "photo" : "builder",
-        count: created.length,
-      },
-    }),
-  );
-  revalidateChild(child.id);
-  return listPortraitsForChild(userId, child.id);
-}
 
 function actionError(error: unknown, fallback: string) {
   if (error instanceof Error && error.message.trim()) {
@@ -189,17 +104,26 @@ export async function generateChildPortrait(formData: FormData): Promise<Portrai
   }
 }
 
-export async function generateInitialPortraits(childId: string): Promise<PortraitActionResult> {
+export async function generateInitialPortraits(
+  formData: FormData,
+): Promise<PortraitActionResult> {
   const user = await getCurrentUser();
   if (!user) {
     return { ok: false, error: "Sign in to draw your child.", redirectTo: "/sign-in" };
   }
+  const childId = String(formData.get("childId") ?? "");
   const child = await getChildForUser(user.id, childId);
   if (!child) {
     return { ok: false, error: "Child profile not found." };
   }
+  let photo;
   try {
-    await generatePortraitBatch(user.id, child, 3);
+    photo = await readTemporaryPhoto(formData);
+  } catch (error) {
+    return { ok: false, error: actionError(error, "Could not read that photo.") };
+  }
+  try {
+    await generatePortraitBatch(user.id, child, 3, photo);
     return { ok: true };
   } catch (error) {
     console.error("generateInitialPortraits failed", error);

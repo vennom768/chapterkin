@@ -1,17 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  generateInitialPortraits,
-  selectChildPortrait,
-  startPortraitPackCheckout,
-} from "@/lib/actions/portraits";
+import { selectChildPortrait, startPortraitPackCheckout } from "@/lib/actions/portraits";
 import { Button } from "@/components/ui/button";
-import {
-  portraitPackPriceLabel,
-  portraitsRemaining,
-} from "@/lib/portraits";
+import { portraitPackPriceLabel, portraitsRemaining } from "@/lib/portraits";
 import { cn } from "@/lib/utils";
 
 type Portrait = {
@@ -26,16 +20,70 @@ export function PortraitStudio({
   selectedPortraitId,
   packs,
   portraits,
+  drawing: startDrawing = false,
 }: {
   childId: string;
   childName: string;
   selectedPortraitId?: string | null;
   packs: number;
   portraits: Portrait[];
+  drawing?: boolean;
 }) {
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [waiting, setWaiting] = useState(startDrawing);
   const remaining = portraitsRemaining(portraits.length, packs);
+
+  async function drawThreePictures() {
+    setPending(true);
+    setWaiting(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/children/${childId}/portraits`, {
+        method: "POST",
+        body: new FormData(),
+      });
+      const payload = (await response.json().catch(() => null)) as
+        | { ok?: boolean; error?: string }
+        | null;
+      if (!response.ok || !payload?.ok) {
+        setError(payload?.error ?? "Could not draw these pictures. Try again in a moment.");
+        setWaiting(false);
+        return;
+      }
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not draw these pictures.");
+      setWaiting(false);
+    } finally {
+      setPending(false);
+    }
+  }
+
+  useEffect(() => {
+    if (portraits.length > 0) {
+      setWaiting(false);
+      return;
+    }
+    if (!waiting) {
+      return;
+    }
+    const interval = window.setInterval(() => {
+      router.refresh();
+    }, 2000);
+    const timeout = window.setTimeout(() => {
+      window.clearInterval(interval);
+      setWaiting(false);
+      setError((current) => current ?? "Those pictures are taking too long. Try again.");
+    }, 180000);
+    return () => {
+      window.clearInterval(interval);
+      window.clearTimeout(timeout);
+    };
+  }, [portraits.length, router, waiting]);
+
+  const drawing = pending || (waiting && portraits.length === 0);
 
   return (
     <div className="space-y-6">
@@ -82,28 +130,12 @@ export function PortraitStudio({
       ) : (
         <div className="space-y-3">
           <p className="text-sm text-muted">
-            We don&apos;t have drawings yet. We can make three from the look you
-            built.
+            {drawing
+              ? "Drawing three storybook pictures. This usually takes about a minute."
+              : "We don't have drawings yet. We can make three from the look you built."}
           </p>
-          <Button
-            type="button"
-            disabled={pending}
-            onClick={async () => {
-              setPending(true);
-              setError(null);
-              try {
-                const result = await generateInitialPortraits(childId);
-                if (!result.ok) {
-                  setError(result.error);
-                }
-              } catch (err) {
-                setError(err instanceof Error ? err.message : "Could not draw these pictures.");
-              } finally {
-                setPending(false);
-              }
-            }}
-          >
-            {pending ? "Drawing three pictures..." : "Draw three pictures"}
+          <Button type="button" disabled={drawing} onClick={() => void drawThreePictures()}>
+            {drawing ? "Drawing three pictures..." : "Draw three pictures"}
           </Button>
         </div>
       )}
