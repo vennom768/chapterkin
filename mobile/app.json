@@ -7,12 +7,6 @@
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#f7f0e4"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.chapterkin.app",
@@ -44,6 +38,15 @@
         {
           "photosPermission": "ChapterKin can use one photo to help draw your child. We do not keep the photo.",
           "cameraPermission": "ChapterKin uses the camera only if you take a photo to help draw your child. We do not keep the photo."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#f7f0e4"
         }
       ]
     ],
