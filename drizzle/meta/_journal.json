@@ -36,6 +36,13 @@
       "when": 1788820000000,
       "tag": "0004_promo_codes",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1788821000000,
+      "tag": "0005_reader_levels",
+      "breakpoints": true
     }
   ]
 }

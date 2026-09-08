@@ -27,6 +27,7 @@ await client.unsafe(`
   ALTER TABLE household_member ADD COLUMN IF NOT EXISTS eyes text;
   ALTER TABLE household_member ADD COLUMN IF NOT EXISTS skin text;
   ALTER TABLE household_member ADD COLUMN IF NOT EXISTS usual_clothes text;
+  ALTER TABLE story_page ADD COLUMN IF NOT EXISTS text_levels text;
 `);
 
 await client.unsafe(`

@@ -53,38 +53,56 @@ export function generateMockStory(input: MockInput) {
   const pages = [
     {
       text: `${name} wriggled under the quilt. ${parents} sat close. ${about ? `${name} had been thinking about ${about}. ` : ""}${today ? `Today, ${today}. ` : ""}The house grew quiet, the kind of quiet that means a story is about to start.`,
+      textEarly: `${name} is in bed. ${parents} sit close.`,
+      textGrowing: `Tucked beneath the quilt, ${name} settled in while ${parents} kept watch. ${about ? `${name} was still turning over thoughts of ${about}. ` : ""}${today ? `The memory of today — ${today} — lingered like a soft echo. ` : ""}A hush filled the house, the kind that means a story is about to begin.`,
       imagePrompt: `${name} in bed with ${parents} nearby, warm lamp light`,
     },
     {
       text: `${sibling ? `${sibling} peeked in, then padded closer. ` : ""}Together they imagined a small path behind the house, just wide enough for little feet. ${name} whispered, "Don't go too far," the way ${parents} always said it, and then they went exactly far enough.`,
+      textEarly: `${sibling ? `${sibling} comes too. ` : ""}${name} sees a small path.`,
+      textGrowing: `${sibling ? `${sibling} slipped in and joined the plan. ` : ""}They pictured a narrow path behind the house, just wide enough for small feet. ${name} repeated the family rule — "Don't go too far" — and then they ventured exactly far enough.`,
       imagePrompt: `${name}${sibling ? ` and ${sibling}` : ""} on a moonlit garden path`,
     },
     {
       text: `A lantern beetle blinked once, twice, and waited. ${name} followed it past the fence, past the sleepy flowers, all the way to a hill that looked like a tucked-in blanket. Nothing scary lived there. Only crickets practicing their goodnights.`,
+      textEarly: `A bug blinks. ${name} goes to a soft hill.`,
+      textGrowing: `A lantern beetle glimmered once, then twice, and waited. ${name} followed it beyond the fence and the drowsy flowers to a hill that resembled a tucked-in blanket. Nothing frightening lived there — only crickets rehearsing their goodnights.`,
       imagePrompt: `storybook hill at dusk with a tiny lantern beetle and ${name}`,
     },
     {
       text: `${today ? `The beetle showed ${name} a picture of the day — ${today} — shining like a pebble you keep in a pocket. ` : ""}${name} smiled. The day could stay. It did not have to be done over. It could just be a story now.`,
+      textEarly: `${name} smiles. The day can stay.`,
+      textGrowing: `${today ? `The beetle offered ${name} a glowing memory of the day — ${today} — like a pebble kept in a pocket. ` : ""}${name} smiled. The day could remain as it was. It did not need to be repeated. It could simply become a story.`,
       imagePrompt: `${name} holding a glowing pebble of the day's memory`,
     },
     {
       text: `"Time to come home," said ${parents}, the way they always did. ${name} took the path back, ${sibling ? `hand in hand with ${sibling}, ` : ""}and the lantern beetle stayed on the hill to wait for another night.`,
+      textEarly: `${parents} say, "Home time." ${name} goes home.`,
+      textGrowing: `"Time to come home," said ${parents}, in the familiar voice that always meant safety. ${name} followed the path back${sibling ? `, hand in hand with ${sibling}` : ""}, while the lantern beetle remained on the hill to wait for another night.`,
       imagePrompt: `${name} walking home toward porch light with ${parents}`,
     },
     {
       text: `They sat on the hill and counted three quiet things: the wind, a far-away dog, and their own breathing. ${name} decided the day had been enough.`,
+      textEarly: `${name} sits. ${name} hears the wind.`,
+      textGrowing: `They rested on the hill and named three quiet things: the breeze, a distant dog, and the steady rhythm of their own breathing. ${name} decided the day had been plenty.`,
       imagePrompt: `${name} sitting on a soft hill counting quiet things`,
     },
     {
       text: `The beetle blinked a last time, like a tiny porch light. ${sibling ? `${sibling} yawned first. ` : ""}${name} yawned bigger.`,
+      textEarly: `The bug blinks. ${name} yawns.`,
+      textGrowing: `The beetle glimmered one last time, like a miniature porch light. ${sibling ? `${sibling} yawned first. ` : ""}${name} answered with an even bigger yawn.`,
       imagePrompt: `tiny lantern beetle blinking near ${name}`,
     },
     {
       text: `Back in bed, ${name} was already half-asleep. ${parents} pulled the quilt to ${name}'s chin. "Tomorrow can wait," they said. ${name} nodded, and the room filled up with ordinary, perfect dark.`,
+      textEarly: `${name} is in bed. ${parents} say, "Sleep."`,
+      textGrowing: `Back in bed, ${name} was already drifting. ${parents} drew the quilt to ${name}'s chin. "Tomorrow can wait," they said. ${name} nodded, and the room filled with ordinary, perfect dark.`,
       imagePrompt: `${name} asleep, quilt tucked, night-light glow`,
     },
     {
       text: `"I will remember the hill," ${name} murmured. ${parents} said they would remember it too. Then there was only the quilt, and sleep.`,
+      textEarly: `${name} says, "I like the hill." Then sleep.`,
+      textGrowing: `"I will remember the hill," ${name} murmured. ${parents} promised they would remember it too. Then there was only the quilt, and sleep.`,
       imagePrompt: `${name} almost asleep, whispering about the hill`,
     },
   ];

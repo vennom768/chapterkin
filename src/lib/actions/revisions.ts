@@ -14,6 +14,7 @@ import { PAGE_REVISION_CENTS, revisionPrice } from "@/lib/plans";
 import { getStoryForUser } from "@/lib/queries/stories";
 import { getCurrentUser } from "@/lib/session";
 import { getStripe, isStripeConfigured } from "@/lib/stripe";
+import { normalizeGeneratedPageLevels } from "@/lib/reader-levels";
 import { createId } from "@/lib/utils";
 
 const requestSchema = z.object({
@@ -172,10 +173,16 @@ export async function fulfillPageRevision(revisionId: string) {
   }
 
   for (const page of rewritten) {
+    const original = current.pages.find((item) => item.id === page.pageId);
+    const levels =
+      original?.kind === "cover"
+        ? { text: page.text, textLevels: null }
+        : normalizeGeneratedPageLevels(page);
     await db
       .update(storyPage)
       .set({
-        text: page.text,
+        text: levels.text,
+        textLevels: levels.textLevels,
         imagePrompt: page.imagePrompt,
         imagePath: null,
         imageStatus: "pending",

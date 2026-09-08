@@ -162,6 +162,7 @@ export const storyPage = pgTable(
     pageIndex: integer("page_index").notNull(),
     kind: text("kind").notNull().default("page"),
     text: text("text").notNull(),
+    textLevels: text("text_levels"),
     imagePrompt: text("image_prompt").notNull(),
     imagePath: text("image_path"),
     imageStatus: text("image_status").notNull().default("pending"),

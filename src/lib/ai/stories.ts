@@ -19,6 +19,8 @@ const generatedStorySchema = z.object({
     .array(
       z.object({
         text: z.string().min(1),
+        textEarly: z.string().min(1).optional(),
+        textGrowing: z.string().min(1).optional(),
         imagePrompt: z.string().min(1),
       }),
     )
@@ -54,6 +56,10 @@ Hard rules:
 - If a daily moment is provided, weave it in naturally as part of the adventure. Do not paste it as a recap.
 - Inclusive, warm, and respectful.
 - Each page is a speak-aloud chunk, not a wall of text.
+- Every page has three texts of the SAME events, names, and ending. Do not add or drop plot between them.
+- text is the parent read-aloud.
+- textEarly is learn-to-read: 1–2 short sentences, mostly 1–2 syllable words, same facts.
+- textGrowing is a richer wording of the same page for a child practicing harder words. Still bedtime-safe.
 - Write 8 to 10 interior story pages. Do not write a cover page. The app adds a titled cover separately.
 - Draw the child at their listed age on every page. Do not age them up or down in the story or in imagePrompt unless the parent's tonight note explicitly asks for a different age.
 - imagePrompt describes one interior scene from the SAME picture book: same child, same age, same clothes, same face, same art style. Include the child's exact age in every imagePrompt. No text in the image.
@@ -107,7 +113,7 @@ JSON fields:
 - seriesTitle: series name if this is or could become a series
 - synopsis: 2–4 sentences of what happened tonight
 - seriesSummary: compact memory for a future chapter
-- pages: array of { text, imagePrompt }`;
+- pages: array of { text, textEarly, textGrowing, imagePrompt }`;
 
   let parsed: unknown;
   if (isLocalStoryProvider()) {

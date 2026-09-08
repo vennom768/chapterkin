@@ -18,6 +18,7 @@ import {
   DEFAULT_ILLUSTRATION_STYLE,
   isIllustrationStyleId,
 } from "@/lib/illustration-styles";
+import { normalizeGeneratedPageLevels } from "@/lib/reader-levels";
 import { createId } from "@/lib/utils";
 
 const generateSchema = z.object({
@@ -159,15 +160,19 @@ export async function createStory(input: z.infer<typeof generateSchema>) {
       ),
       imageStatus: "pending",
     },
-    ...generated.pages.map((page, index) => ({
-      id: createId(),
-      storyId,
-      pageIndex: index + 1,
-      kind: "page",
-      text: page.text,
-      imagePrompt: page.imagePrompt,
-      imageStatus: "pending",
-    })),
+    ...generated.pages.map((page, index) => {
+      const levels = normalizeGeneratedPageLevels(page);
+      return {
+        id: createId(),
+        storyId,
+        pageIndex: index + 1,
+        kind: "page",
+        text: levels.text,
+        textLevels: levels.textLevels,
+        imagePrompt: page.imagePrompt,
+        imageStatus: "pending",
+      };
+    }),
   ]);
 
   if (series) {

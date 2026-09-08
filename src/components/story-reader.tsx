@@ -4,12 +4,22 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DEFAULT_READER_LEVEL,
+  READER_LEVELS,
+  READER_LEVEL_STORAGE_KEY,
+  isReaderLevelId,
+  textForReaderLevel,
+  type ReaderLevelId,
+} from "@/lib/reader-levels";
+import { cn } from "@/lib/utils";
 
 type Page = {
   id: string;
   pageIndex: number;
   kind?: string | null;
   text: string;
+  textLevels?: string | null;
   imageStatus: string;
   imagePath: string | null;
 };
@@ -34,10 +44,18 @@ export function StoryReader({
   pages: Page[];
 }) {
   const [index, setIndex] = useState(0);
+  const [readerLevel, setReaderLevel] = useState<ReaderLevelId>(DEFAULT_READER_LEVEL);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [imageStatus, setImageStatus] = useState(
     Object.fromEntries(pages.map((page) => [page.id, page.imageStatus])),
   );
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem(READER_LEVEL_STORAGE_KEY);
+    if (stored && isReaderLevelId(stored)) {
+      setReaderLevel(stored);
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -101,6 +119,33 @@ export function StoryReader({
           <h1 className="font-serif text-2xl text-navy sm:text-3xl md:text-4xl">{title}</h1>
         )}
         <p className="mt-1 text-sm text-muted">A story for {childName}</p>
+        <div className="mx-auto mt-4 max-w-lg">
+          <p className="mb-2 text-sm font-semibold text-navy">Who is reading?</p>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            {READER_LEVELS.map((level) => {
+              const selected = readerLevel === level.id;
+              return (
+                <button
+                  key={level.id}
+                  type="button"
+                  onClick={() => {
+                    setReaderLevel(level.id);
+                    window.localStorage.setItem(READER_LEVEL_STORAGE_KEY, level.id);
+                  }}
+                  className={cn(
+                    "rounded-2xl border px-3 py-2.5 text-left transition-colors",
+                    selected
+                      ? "border-accent bg-gold/30 text-navy"
+                      : "border-border bg-white text-navy hover:bg-gold/15",
+                  )}
+                >
+                  <span className="block text-sm font-semibold">{level.label}</span>
+                  <span className="mt-0.5 block text-xs text-muted">{level.blurb}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
         <Link
           href={`/stories/${storyId}/edit`}
           className="mt-2 inline-flex text-sm font-semibold text-accent"
@@ -147,8 +192,15 @@ export function StoryReader({
               {title}
             </p>
           ) : (
-            <p className="font-serif text-lg leading-8 text-foreground sm:text-xl md:text-2xl md:leading-9">
-              {page.text}
+            <p
+              className={cn(
+                "font-serif leading-8 text-foreground md:leading-9",
+                readerLevel === "early"
+                  ? "text-xl sm:text-2xl md:text-3xl"
+                  : "text-lg sm:text-xl md:text-2xl",
+              )}
+            >
+              {textForReaderLevel(page, readerLevel)}
             </p>
           )}
           <p className="mt-5 text-sm text-muted">
