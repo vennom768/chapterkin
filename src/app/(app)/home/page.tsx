@@ -27,15 +27,13 @@ export default async function HomePage() {
           family, siblings, and whatever happened today.
         </p>
         <p className="mt-3 text-sm font-semibold text-navy">
-          {usage.limit == null
-            ? "Unlimited stories this month."
-            : usage.paid
-              ? `${usage.remaining} of ${usage.limit} stories left this month.`
-              : usage.canGenerate
-                ? "One complimentary story included."
-                : "Complimentary story used."}{" "}
-          <Link href="/billing" className="text-accent">
-            Billing
+          {usage.paid
+            ? usage.limit == null
+              ? "Unlimited stories this month."
+              : `${usage.remaining} of ${usage.limit} stories left this month.`
+            : "Choose a plan to write tonight's story."}{" "}
+          <Link href={usage.paid ? "/billing" : "/pricing"} className="text-accent">
+            {usage.paid ? "Billing" : "See plans"}
           </Link>
         </p>
       </div>

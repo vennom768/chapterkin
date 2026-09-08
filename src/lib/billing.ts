@@ -1,7 +1,7 @@
 import { and, count, eq, gte } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { story, subscription } from "@/lib/db/schema";
-import { COMPLIMENTARY_STORIES, PLANS, type PlanId, isPlanId } from "@/lib/plans";
+import { PLANS, type PlanId, isPlanId } from "@/lib/plans";
 
 const ACTIVE_STATUSES = new Set(["active", "trialing", "past_due", "promo"]);
 
@@ -37,10 +37,12 @@ export async function getUsage(userId: string) {
   const plan = planId ? PLANS[planId] : null;
   const periodStart = paid ? record?.currentPeriodStart ?? null : null;
   const used = await countStoriesSince(userId, periodStart);
-  const complimentaryUsed = paid ? 0 : await countStoriesSince(userId);
-  const limit = plan ? plan.storiesPerMonth : COMPLIMENTARY_STORIES;
-  const remaining =
-    limit == null ? Number.POSITIVE_INFINITY : Math.max(0, limit - (paid ? used : complimentaryUsed));
+  const limit = paid ? (plan ? plan.storiesPerMonth : 0) : 0;
+  const remaining = !paid
+    ? 0
+    : limit == null
+      ? Number.POSITIVE_INFINITY
+      : Math.max(0, limit - used);
 
   return {
     record,
@@ -48,10 +50,10 @@ export async function getUsage(userId: string) {
     planId,
     paid,
     promo: record?.status === "promo",
-    used: paid ? used : complimentaryUsed,
+    used,
     limit,
     remaining,
-    canGenerate: remaining > 0,
+    canGenerate: paid && remaining > 0,
   };
 }
 
@@ -61,9 +63,7 @@ export async function assertCanGenerateStory(userId: string) {
     return usage;
   }
   if (!usage.paid) {
-    throw new Error(
-      "Your complimentary story is used. Choose a plan to keep writing nights.",
-    );
+    throw new Error("Choose a plan to write a story.");
   }
   throw new Error(
     `This month's ${usage.limit} stories are used. Upgrade or wait until the next billing date.`,

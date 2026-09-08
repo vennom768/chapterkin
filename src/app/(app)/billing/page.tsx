@@ -31,7 +31,7 @@ export default async function BillingPage({
           <p className="font-semibold text-navy">You&apos;re subscribed.</p>
           <p className="mt-1 text-sm text-muted">
             It can take a few seconds for Stripe to finish. Refresh if this
-            page still shows the complimentary story.
+            page still shows no plan.
           </p>
         </Card>
       ) : null}
@@ -45,12 +45,14 @@ export default async function BillingPage({
               ? usage.plan
                 ? `${usage.plan.name} · ${planStoryLabel(usage.plan.storiesPerMonth)}`
                 : "Active plan"
-              : "Complimentary first story"}
+              : "No plan yet"}
         </p>
         <p className="text-muted">
-          {usage.limit == null
-            ? `${usage.used} stories written this period.`
-            : `${usage.used} of ${usage.limit} stories used.`}
+          {usage.paid
+            ? usage.limit == null
+              ? `${usage.used} stories written this period.`
+              : `${usage.used} of ${usage.limit} stories used.`
+            : "Stories start after you choose a plan."}
         </p>
         {usage.record?.currentPeriodEnd ? (
           <p className="text-sm text-muted">

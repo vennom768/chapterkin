@@ -68,7 +68,7 @@ export default async function LandingPage() {
                   href="/sign-up"
                   className="inline-flex min-h-12 items-center justify-center rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white hover:bg-accent-dark"
                 >
-                  Start a complimentary story
+                  Create a family account
                 </Link>
                 <Link
                   href="/sign-in"
@@ -187,7 +187,7 @@ export default async function LandingPage() {
                 href="/sign-up"
                 className="inline-flex min-h-12 items-center justify-center rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white hover:bg-accent-dark"
               >
-                Start a complimentary story
+                Create a family account
               </Link>
               <Link
                 href="/pricing"

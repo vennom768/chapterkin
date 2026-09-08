@@ -29,8 +29,7 @@ export default async function PricingPage() {
         </h1>
         <p className="mt-3 max-w-2xl text-muted">
           A printed picture book often costs about $15 for one copy. Plans
-          start at $24.99 a month. Every family gets one complimentary story.
-          Cancel anytime.
+          start at $24.99 a month. Pick a plan to write stories. Cancel anytime.
         </p>
         <div className="mt-8">
           <PlanPicker currentPlanId={usage?.planId} signedIn={Boolean(user)} />

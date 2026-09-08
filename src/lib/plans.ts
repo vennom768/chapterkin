@@ -1,5 +1,3 @@
-export const COMPLIMENTARY_STORIES = 1;
-
 export const PAGE_REVISION_CENTS = 199;
 
 export const PLANS = {

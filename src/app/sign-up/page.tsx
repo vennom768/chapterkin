@@ -6,7 +6,7 @@ export default function SignUpPage() {
   return (
     <AuthShell
       title="Create a family account"
-      description="Parents sign in. We will email you a confirmation link, then you add the kids and pick who tonight's story is for."
+      description="Parents sign in. We will email you a confirmation link, then you add the kids and choose a plan to write tonight's story."
     >
       <Suspense>
         <AuthForm mode="sign-up" />
